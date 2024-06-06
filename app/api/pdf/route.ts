@@ -1,6 +1,6 @@
 import { connectToDatabase } from "@/helpers/server-helpers";
 import prisma from "@/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   S3Client,
   PutObjectCommand,
@@ -10,12 +10,13 @@ import { auth } from "@/auth";
 import crypto from "crypto";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { getUserRole } from "../checkRole";
+import formidable from "formidable";
 
 const s3Client = new S3Client({
-  region: process.env.AWS_APP_BUCKET_REGION!,
+  region: process.env.AWS_BUCKET_REGION!,
   credentials: {
-    accessKeyId: process.env.AWS_APP_ACCESS_KEY!,
-    secretAccessKey: process.env.AWS_APP_SECRET_ACCESS_KEY!,
+    accessKeyId: process.env.AWS_ACCESS_KEY!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
   },
 });
 
@@ -32,53 +33,66 @@ const maxFileSize = 1048576 * 100;
 const generateFileName = (bytes = 32) =>
   crypto.randomBytes(bytes).toString("hex");
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export const POST = async (req: Request) => {
   try {
     const session = await auth();
     const role = await getUserRole(session);
-    if (role === "ADMIN") {
-      const { file, title, courseId, fileType, fileSize, checksum } =
-        await req.json();
-      if (!allowedFileTypes.includes(fileType)) {
-        return new Response(
-          JSON.stringify({ failure: "File type not allowed" }),
-          { status: 400 },
-        );
-      }
-      if (fileSize > maxFileSize) {
-        return new Response(
-          JSON.stringify({ failure: "File size too large" }),
-          { status: 400 },
-        );
-      }
-      const fileName = generateFileName();
+    if (role !== "ADMIN") {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+    }
 
-      const putObjectCommand = new PutObjectCommand({
-        Bucket: process.env.AWS_APP_BUCKET_NAME!,
-        Key: fileName,
-        ContentType: fileType,
-        ContentLength: fileSize,
-        ChecksumSHA256: checksum,
-      });
+    const formData = await req.formData();
+    const file: File = formData.get("file") as File;
+    const title: string = formData.get("title") as string;
+    const courseId: string = formData.get("courseId") as string;
+    const fileType: string = formData.get("fileType") as string;
+    const checksum: string = formData.get("checksum") as string;
+    const fileSizeStr: string = formData.get("fileSize") as string; // Get size as string
+    const fileSize: number = parseInt(fileSizeStr, 10);
 
-      const url = await getSignedUrl(s3Client, putObjectCommand, {
-        expiresIn: 60,
-      });
+    if (!allowedFileTypes.includes(fileType)) {
+      return NextResponse.json(
+        { failure: "File type not allowed" },
+        { status: 400 },
+      );
+    }
+    if (fileSize > maxFileSize) {
+      return NextResponse.json(
+        { failure: "File size too large" },
+        { status: 400 },
+      );
+    }
 
-      if (!file || !title || !courseId) {
-        return new Response(JSON.stringify({ message: "invalid data" }), {
-          status: 400,
-        });
-      }
+    const fileName = generateFileName();
 
-      const response = await fetch(url, {
-        method: "PUT",
-        headers: {
-          "Content-Type": fileType,
-        },
-        body: file,
-      });
-      console.log(response);
+    const putObjectCommand = new PutObjectCommand({
+      Bucket: process.env.AWS_BUCKET_NAME!,
+      Key: fileName,
+      ContentType: fileType,
+      ChecksumSHA256: checksum,
+    });
+
+    const url = await getSignedUrl(s3Client, putObjectCommand, {
+      expiresIn: 60,
+    });
+
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": fileType,
+      },
+      body: file,
+    });
+
+    console.log(response);
+
+    if (response.ok) {
       await connectToDatabase();
       const newPdf = await prisma.pDF.create({
         data: {
@@ -88,17 +102,20 @@ export const POST = async (req: Request) => {
         },
       });
 
-      return new Response(JSON.stringify({ newPdf }), { status: 200 });
+      return NextResponse.json({ newPdf }, { status: 200 });
     } else {
-      return new Response(JSON.stringify({ message: "Unauthorized" }), {
-        status: 401,
-      });
+      console.log("aloooo");
+      return NextResponse.json(
+        { message: "Failed to upload file" },
+        { status: 400 },
+      );
     }
   } catch (error) {
     console.error(error);
-    return new Response(JSON.stringify({ message: "internal server error" }), {
-      status: 500,
-    });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 },
+    );
   } finally {
     await prisma.$disconnect();
   }

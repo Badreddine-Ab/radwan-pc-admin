@@ -1,6 +1,7 @@
+"use client";
 import Modal from "../modal/Modal";
+import React, { useState } from "react";
 
-import React, { useEffect, useState } from "react";
 const computeSHA256 = async (file: File) => {
   const buffer = await file.arrayBuffer();
   const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
@@ -10,32 +11,39 @@ const computeSHA256 = async (file: File) => {
     .join("");
   return hashHex;
 };
-export default function CreatePdfModal({ isOpen, closeModal, courseId }: any) {
-  const [pdf, setPdf] = useState<File | null>(null);
-  const [pdfTitle, setPdfTitle] = useState("");
 
-  async function handleAddPdf() {
-    if (!pdf || !pdfTitle || !courseId) {
+export default function CreateNotificationModal({ isOpen, closeModal }: any) {
+  const [file, setFile] = useState<File | null>(null);
+
+  async function handleAddNotification() {
+    if (!file) {
       alert("Please fill all fields");
       return;
     }
-    const checksum = await computeSHA256(pdf);
-    const formData = new FormData();
-    formData.append("file", pdf);
-    formData.append("title", pdfTitle);
-    formData.append("courseId", courseId[0]);
-    formData.append("fileType", pdf.type);
-    formData.append("fileSize", pdf.size.toString());
-    formData.append("checksum", checksum);
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}api/pdf`, {
-      method: "POST",
 
-      body: formData,
-    });
-    if (response.ok) {
-      location.reload();
-    } else {
-      console.log(response);
+    const checksum = await computeSHA256(file);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileType", file.type);
+    formData.append("fileSize", file.size.toString());
+    formData.append("checksum", checksum);
+
+    try {
+      const response = await fetch("/api/notification", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        alert("Notification created successfully");
+        location.reload();
+      } else {
+        console.log(response);
+        alert("Failed to create notification");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An error occurred while creating the notification");
     }
   }
 
@@ -43,7 +51,7 @@ export default function CreatePdfModal({ isOpen, closeModal, courseId }: any) {
     <Modal
       isOpen={isOpen}
       onClose={closeModal}
-      title="Ajouter un pdf au cours"
+      title="Create Notification"
       footer={
         <div className="flex justify-end">
           <button
@@ -54,7 +62,7 @@ export default function CreatePdfModal({ isOpen, closeModal, courseId }: any) {
           </button>
           <button
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
-            onMouseDown={handleAddPdf}
+            onMouseDown={handleAddNotification}
           >
             Confirmer
           </button>
@@ -63,26 +71,14 @@ export default function CreatePdfModal({ isOpen, closeModal, courseId }: any) {
     >
       <div className="flex flex-col gap-5.5 p-6.5 overflow-auto">
         <div>
-          <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-            Titre du pdf
-          </label>
-          <input
-            onChange={(e) => setPdfTitle(e.target.value)}
-            type="text"
-            id="video-title"
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="Enter le titre du pdf"
-            required
-          />
-
           <label className="my-3 block text-sm font-medium text-black dark:text-white">
-            Importer un PDF
+            Upload File
           </label>
           <input
-            accept="application/pdf"
-            onChange={(e) => setPdf(e.target.files?.[0] || null)}
+            accept="image/jpeg,image/png,video/mp4,video/quicktime,application/pdf,application/x-pdf"
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
             type="file"
-            id="pdf"
+            id="file"
             className="w-full cursor-pointer rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition file:mr-5 file:border-collapse file:cursor-pointer file:border-0 file:border-r file:border-solid file:border-stroke file:bg-whiter file:px-5 file:py-3 file:hover:bg-primary file:hover:bg-opacity-10 focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-form-strokedark dark:file:bg-white/30 dark:file:text-white dark:focus:border-primary"
           />
         </div>

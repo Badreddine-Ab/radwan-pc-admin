@@ -117,22 +117,21 @@ export default function CreateCourse({
         alert("Please fill all fields");
         return;
       }
-      console.log("1");
+
+      const checksum = await computeSHA256(pdf);
+      const formData = new FormData();
+      formData.append("file", pdf);
+      formData.append("title", pdfTitle);
+      formData.append("courseId", courseId[0]);
+      formData.append("fileType", pdf.type);
+      formData.append("fileSize", pdf.size.toString());
+      formData.append("checksum", checksum);
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_HOST}api/pdf`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            file: pdf,
-            title: pdfTitle,
-            courseId: courseId,
-            fileType: pdf.type,
-            fileSize: pdf.size,
-            checksum: computeSHA256(pdf),
-          }),
+          body: formData,
         },
       );
 
@@ -244,7 +243,7 @@ export default function CreateCourse({
         <div className="flex flex-col gap-5.5 p-6.5 h-[300px] overflow-auto">
           <div>
             <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-              Attach file
+              Clicker ici pour importer
             </label>
             <input
               onChange={handleFileChange}
@@ -266,7 +265,7 @@ export default function CreateCourse({
             <div className="flex justify-between">
               <div className="w-1/2">
                 <label className="my-3 block text-sm font-medium text-black dark:text-white">
-                  Superieure
+                  Préparation de concours
                 </label>
                 <SwitcherOne enabled={superieur} setEnabled={setSuperieur} />
               </div>

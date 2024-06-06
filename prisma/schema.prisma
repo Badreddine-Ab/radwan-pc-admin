@@ -29,6 +29,13 @@ model User {
   premium_start DateTime?
   premium_end DateTime?
 }
+
+model notification {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  image        String
+  from_user_email String
+  date_created DateTime @default(now())
+}
 //add image
   model Course {
     id            String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -59,5 +66,5 @@ model PDF {
   url   String
   title String
   courseId String @db.ObjectId
-  course Course @relation(fields: [courseId], references: [id])
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 }

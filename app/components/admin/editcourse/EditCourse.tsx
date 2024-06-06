@@ -65,6 +65,7 @@ function EditCourse() {
   }
 
   async function handleUpdateCourse() {
+    setLoading(true);
     if (file) {
       const res = await edgestore.myPublicImages.upload({ file });
       setImage(res.url);
@@ -91,7 +92,7 @@ function EditCourse() {
       },
     );
     if (response.ok) {
-      console.log(response.body);
+      setLoading(false);
     }
   }
   useEffect(() => {
@@ -144,7 +145,7 @@ function EditCourse() {
       },
     );
   }, [id]);
-  if (pageLoading) {
+  if (pageLoading || loading) {
     return (
       <div className="flex justify-center items-center h-screen w-screen fixed top-0 left-0 bg-white bg-opacity-80 z-50">
         <LoadingSpinner />
@@ -257,7 +258,7 @@ function EditCourse() {
           <div className="flex justify-between">
             <div className="w-1/2">
               <label className="my-3 block text-sm font-medium text-black dark:text-white">
-                Superieure
+                Préparation de concours
               </label>
               <div className="flex items-center gap-2">
                 <SwitcherOne
