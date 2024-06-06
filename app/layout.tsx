@@ -1,14 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import styles from "./page.module.css";
 import "./globals.css";
-import Header from "./components/header/Header";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
 import DefaultLayout from "./components/admin/layout/DefaultLayout";
 import { EdgeStoreProvider } from "@/lib/edgestore";
-import { getUserRole } from "./api/checkRole";
-import { handleSignOut } from "./components/signIn/handleSignOut";
 
 const inter = Inter({ subsets: ["latin"] });
 
