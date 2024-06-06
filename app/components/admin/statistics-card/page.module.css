@@ -1,0 +1,49 @@
+/* components/StatisticsCard.module.css */
+
+.card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #2d3748; /* Dark background color */
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    color: #e2e8f0; /* Light text color */
+    margin: 10px;
+    flex: 1 1 21%; /* Allow flex items to grow and shrink */
+    min-width: 250px; /* Minimum width for smaller screens */
+  }
+  
+  .content {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .header {
+    font-size: 14px;
+    color: #a0aec0; /* Lighter text for the header */
+  }
+  
+  .value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #f7fafc; /* Bright text color */
+  }
+  
+  .changePositive {
+    font-size: 14px;
+    color: #48bb78; /* Green color for positive change */
+  }
+  
+  .changeNegative {
+    font-size: 14px;
+    color: #f56565; /* Red color for negative change */
+  }
+  
+  .icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #63b3ed; /* Default icon color */
+  }
+  

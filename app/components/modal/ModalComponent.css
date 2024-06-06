@@ -1,0 +1,90 @@
+.modal {
+  background-color: #1d1f21;
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 500px;
+  margin: auto;
+  position: relative;
+}
+
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.75);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  color: white;
+  cursor: pointer;
+}
+
+.form-group {
+  margin: 20px 0;
+}
+
+#subjects, #course {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.selected-subjects {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.subject-tag {
+  display: inline-block;
+  background-color: #444;
+  color: white;
+  padding: 5px 10px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  border-radius: 5px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.modal-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.modal-button.close {
+  background-color: #444;
+  color: white;
+}
+
+.modal-button.search {
+  background-color: #800080;
+  color: white;
+}

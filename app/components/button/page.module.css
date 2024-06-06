@@ -1,0 +1,44 @@
+.button {
+  font-family: "Open Sans", sans-serif;
+  font-weight: bold;
+  border-radius: 2rem;
+  background-color: #151216;
+  border-color: rgb(211, 35, 254);
+  border-color: linear-gradient(
+    90deg,
+    rgba(211, 35, 254, 1) 100%,
+    rgba(164, 48, 241, 1) 100%
+  );
+  border-width: 3px;
+  min-height: 33px;
+  min-width: 100px;
+}
+.button:enabled {
+  cursor: pointer;
+}
+.content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  align-self: stretch;
+  padding: 0.7rem 1rem;
+}
+
+.button:hover {
+  background: rgb(202, 44, 239);
+  background: linear-gradient(
+    90deg,
+    rgba(202, 44, 239, 1) 0%,
+    rgba(140, 94, 156, 1) 50%,
+    rgba(121, 62, 162, 1) 100%
+  );
+  border-width: 3px;
+  border-color: rgb(202, 44, 239);
+  border-color: linear-gradient(
+    90deg,
+    rgba(202, 44, 239, 1) 0%,
+    rgba(140, 94, 156, 1) 50%,
+    rgba(121, 62, 162, 1) 100%
+  );
+}

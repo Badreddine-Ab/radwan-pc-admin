@@ -1,0 +1,34 @@
+.container {
+  display: flex;
+  align-items: center;
+  background: #151216;
+  justify-content: space-between;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  padding-left: 92px;
+  padding-right: 92px;
+}
+
+.links {
+  display: flex;
+  gap: 2rem;
+}
+
+.link {
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.link:hover {
+  color: #c530e9;
+}
+
+.login {
+  display: flex;
+  gap: 1rem;
+}
+
+.logo {
+  width: 107px;
+  height: 24px;
+}

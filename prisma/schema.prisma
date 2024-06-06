@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  REGULAR
+  PREMIUM
+}
+model User {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  email       String   @unique
+  name        String
+  image       String?
+  role        UserRole @default(REGULAR)
+  date_created DateTime @default(now())
+  date_updated DateTime @updatedAt
+  premium_start DateTime?
+  premium_end DateTime?
+}
+//add image
+  model Course {
+    id            String   @id @default(auto()) @map("_id") @db.ObjectId
+    name          String
+    videos        Video[]
+    description   String
+    PDFs          PDF[]
+    is_sup        Boolean
+    level         String
+    image         String
+    language      String
+    module        String
+    is_premium    Boolean
+    date_created  DateTime @default(now())
+    date_updated  DateTime @updatedAt
+}
+
+model Video {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  url   String
+  title String
+  courseId String @db.ObjectId
+  course    Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model PDF {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  url   String
+  title String
+  courseId String @db.ObjectId
+  course Course @relation(fields: [courseId], references: [id])
+}
