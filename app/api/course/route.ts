@@ -61,6 +61,7 @@ export const POST = async (req: Request) => {
     await prisma.$disconnect();
   }
 };
+
 export const GET = async (req: Request) => {
   const baseurl = new URL(req.url);
 
@@ -75,20 +76,30 @@ export const GET = async (req: Request) => {
   const id = baseurl.searchParams.get("id");
 
   try {
+    const session = await auth();
+    const role = await getUserRole(session);
+
     await connectToDatabase();
+
+    const whereCondition: any = {
+      is_premium: isPremium ? JSON.parse(isPremium) : undefined,
+      language: language ? language : undefined,
+      is_sup: isSup ? JSON.parse(isSup) : undefined,
+      name: name ? { contains: name } : undefined,
+      level: level ? level : undefined,
+      module: module ? module : undefined,
+      id: id ? id : undefined,
+    };
+
+    if (role === "REGULAR") {
+      whereCondition.is_premium = false;
+    }
+
     const courses = await prisma.course.findMany({
       take: pageSize + 1,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: { id: "desc" },
-      where: {
-        is_premium: isPremium ? JSON.parse(isPremium) : undefined,
-        language: language ? language : undefined,
-        is_sup: isSup ? JSON.parse(isSup) : undefined,
-        name: name ? { contains: name } : undefined,
-        level: level ? level : undefined,
-        module: module ? module : undefined,
-        id: id ? id : undefined,
-      },
+      where: whereCondition,
       include: {
         videos: true,
         PDFs: true,
