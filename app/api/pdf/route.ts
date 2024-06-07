@@ -33,12 +33,6 @@ const maxFileSize = 1048576 * 100;
 const generateFileName = (bytes = 32) =>
   crypto.randomBytes(bytes).toString("hex");
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 export const POST = async (req: Request) => {
   try {
     const session = await auth();

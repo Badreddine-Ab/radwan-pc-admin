@@ -1,19 +1,23 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import CreateNotificationModal from "@/app/components/admin/createNotificationModal/createNotificationModal";
+import moment from "moment";
+import "moment/locale/fr"; // Import the French locale
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+moment.locale("fr"); // Set the locale to French
+
 const NotificationsTable = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
-
   const fetchNotificationsCalled = useRef(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState("");
+
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
-
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
 
   const fetchNotifications = async (cursor: string | null = null) => {
     setLoading(true);
@@ -34,6 +38,7 @@ const NotificationsTable = () => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     if (!fetchNotificationsCalled.current) {
       fetchNotifications();
@@ -41,6 +46,18 @@ const NotificationsTable = () => {
     }
   }, []);
 
+  const formatDate = (dateString: string) => {
+    return moment(dateString).fromNow();
+  };
+
+  const handleFigureClick = (image: string) => {
+    setLightboxImage(image);
+    setLightboxOpen(true);
+  };
+
+  const handleOpenUser = (userEmail: string) => {
+    window.location.href = `/admin/users?email=${userEmail}`;
+  };
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <div className="max-w-full overflow-x-auto">
@@ -51,48 +68,45 @@ const NotificationsTable = () => {
           Ajouter un pdf au cours
         </div>
 
-        <table className="w-full table-auto">
-          <thead>
-            <tr className="bg-gray-2 text-left dark:bg-meta-4">
-              <th className="min-w-[220px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
-                Image
-              </th>
-              <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
-                From User Email
-              </th>
-              <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
-                Date
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {notifications.map((notification) => (
-              <tr key={notification.id}>
-                <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
-                  <div className="flex items-center gap-3 p-2.5 xl:p-5">
-                    <div className="flex-shrink-0">
-                      <img
-                        src={notification.image}
-                        alt="Notification"
-                        className="w-10 h-10 object-cover rounded-full"
-                      />
-                    </div>
-                  </div>
-                </td>
-                <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                  <p className="text-black dark:text-white">
-                    {notification.from_user_email}
-                  </p>
-                </td>
-                <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                  <p className="text-black dark:text-white">
-                    {new Date(notification.created_at).toLocaleString()}
-                  </p>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="flex flex-wrap justify-center gap-4">
+          {notifications.map((notification) => (
+            <figure
+              key={notification.id}
+              className="relative max-w-sm min-h-[200px] transition-all duration-300 cursor-pointer filter grayscale hover:grayscale-0 flex-shrink-0"
+              onClick={() => handleFigureClick(notification.image)}
+            >
+              <img
+                className="rounded-lg"
+                src={notification.image}
+                alt="image description"
+              />
+              <figcaption className="absolute px-4 text-lg text-white bottom-6">
+                <p>{notification.from_user_email}</p>
+                <p>{formatDate(notification.date_created)}</p>
+              </figcaption>
+              <div className="absolute bottom-2 right-2">
+                <svg
+                  onMouseDown={() =>
+                    handleOpenUser(notification.from_user_email)
+                  }
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 text-white hover:text-blue-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5 9 6.343 9 8s1.343 3 3 3zm0 2c-2.667 0-8 1.333-8 4v3h16v-3c0-2.667-5.333-4-8-4z"
+                  />
+                </svg>
+              </div>
+            </figure>
+          ))}
+        </div>
+
         {nextCursor && (
           <div className="flex justify-center pt-4 items-center">
             <button
@@ -105,10 +119,19 @@ const NotificationsTable = () => {
             </button>
           </div>
         )}
+
         {isModalOpen && (
           <CreateNotificationModal
             isOpen={isModalOpen}
             closeModal={closeModal}
+          />
+        )}
+
+        {lightboxOpen && (
+          <Lightbox
+            open={lightboxOpen}
+            slides={[{ src: lightboxImage }]}
+            close={() => setLightboxOpen(false)}
           />
         )}
       </div>
@@ -117,9 +140,10 @@ const NotificationsTable = () => {
 };
 
 export default NotificationsTable;
+
 interface Notification {
   id: string;
   image: string;
   from_user_email: string;
-  created_at: Date;
+  date_created: string; // Ensure this is a string
 }

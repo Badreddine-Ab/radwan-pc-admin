@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import Modal from "../modal/Modal";
 import Swal from "sweetalert2";
+import { useSearchParams } from "next/navigation";
 
 const UsersTable = () => {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -11,7 +12,11 @@ const UsersTable = () => {
   const fetchCoursesCalled = useRef(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isRevokeModalOpen, setIsRevokeModalOpen] = useState(false);
+  const searchParams = useSearchParams();
 
+  const email = searchParams.get("email");
+
+  console.log("alooooo", email);
   const [loading, setLoading] = useState<boolean>(false);
   const handleOpenRevokeModal = (rowData: any) => {
     setSelectedUser(rowData);
@@ -26,11 +31,18 @@ const UsersTable = () => {
   const handleCloseModal = () => {
     setModalOpen(false);
   };
-  const fetchUsers = async (cursor: string | null = null) => {
+  const fetchUsers = async (
+    cursor: string | null = null,
+    emailParam: string | null = null,
+  ) => {
+    console.log(emailParam);
     setLoading(true);
     let url = "/api/users?pageSize=6";
     if (cursor) {
       url += `&cursor=${cursor}`;
+    }
+    if (emailParam) {
+      url += `&email=${emailParam}`;
     }
     try {
       const response = await fetch(url);
@@ -50,11 +62,14 @@ const UsersTable = () => {
   };
   useEffect(() => {
     if (!fetchCoursesCalled.current) {
-      fetchUsers();
+      if (email) {
+        fetchUsers(null, email); // Pass email as a parameter
+      } else {
+        fetchUsers();
+      }
       fetchCoursesCalled.current = true;
     }
   }, []);
-
   const upgradeUser = async (userId: string) => {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_HOST}api/users/upgrade`,

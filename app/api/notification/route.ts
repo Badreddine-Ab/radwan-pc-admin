@@ -39,7 +39,7 @@ export const GET = async (req: Request) => {
   try {
     const notifications = await prisma.notification.findMany({
       take: pageSize + 1, // Fetch one more item than page size to check for next page
-      cursor: cursor ? { id: parseInt(cursor, 10) } : undefined,
+      cursor: cursor ? { id: cursor } : undefined,
       orderBy: { id: "desc" },
     });
 
@@ -75,7 +75,7 @@ export const POST = async (req: Request) => {
       const checksum: string = formData.get("checksum") as string;
       const fileSizeStr: string = formData.get("fileSize") as string; // Get size as string
       const fileSize: number = parseInt(fileSizeStr, 10);
-      const from_user_email = session?.user?.email;
+      const from_user_email: string = session?.user?.email as string;
       if (!allowedFileTypes.includes(fileType)) {
         return NextResponse.json(
           { failure: "File type not allowed" },
