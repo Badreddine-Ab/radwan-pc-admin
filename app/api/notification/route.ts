@@ -35,12 +35,15 @@ export const GET = async (req: Request) => {
   const url = new URL(req.url);
   const cursor = url.searchParams.get("cursor");
   const pageSize = parseInt(url.searchParams.get("pageSize") || "10", 10);
-
+  const email = url.searchParams.get("email");
   try {
     const notifications = await prisma.notification.findMany({
       take: pageSize + 1, // Fetch one more item than page size to check for next page
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: { id: "desc" },
+      where: {
+        from_user_email: email ? email : undefined,
+      },
     });
 
     const hasNextPage = notifications.length > pageSize;

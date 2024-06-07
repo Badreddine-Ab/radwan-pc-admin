@@ -9,6 +9,7 @@ export const GET = async (req: Request) => {
   const pageSize = parseInt(baseurl.searchParams.get("pageSize") || "10", 10);
 
   const email = baseurl.searchParams.get("email");
+  const name = baseurl.searchParams.get("name");
   try {
     await connectToDatabase();
     const users = await prisma.user.findMany({
@@ -16,7 +17,8 @@ export const GET = async (req: Request) => {
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: { id: "desc" },
       where: {
-        email: email ? email : undefined,
+        email: email ? { contains: email, mode: "insensitive" } : undefined,
+        name: name ? { contains: name, mode: "insensitive" } : undefined,
       },
     });
 
@@ -38,4 +40,3 @@ export const GET = async (req: Request) => {
     await prisma.$disconnect();
   }
 };
-

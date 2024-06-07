@@ -14,10 +14,12 @@ const UsersTable = () => {
   const [isRevokeModalOpen, setIsRevokeModalOpen] = useState(false);
   const searchParams = useSearchParams();
 
-  const email = searchParams.get("email");
+  const emailParam = searchParams.get("email");
 
-  console.log("alooooo", email);
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+
   const handleOpenRevokeModal = (rowData: any) => {
     setSelectedUser(rowData);
     setIsRevokeModalOpen(true);
@@ -34,8 +36,8 @@ const UsersTable = () => {
   const fetchUsers = async (
     cursor: string | null = null,
     emailParam: string | null = null,
+    nameParam: string | null = null,
   ) => {
-    console.log(emailParam);
     setLoading(true);
     let url = "/api/users?pageSize=6";
     if (cursor) {
@@ -44,10 +46,12 @@ const UsersTable = () => {
     if (emailParam) {
       url += `&email=${emailParam}`;
     }
+    if (nameParam) {
+      url += `&name=${nameParam}`;
+    }
     try {
       const response = await fetch(url);
       const data = await response.json();
-      console.log(data);
       const filteredUsers = data.users.filter(
         (user: User) => user.role !== "ADMIN",
       );
@@ -62,8 +66,8 @@ const UsersTable = () => {
   };
   useEffect(() => {
     if (!fetchCoursesCalled.current) {
-      if (email) {
-        fetchUsers(null, email); // Pass email as a parameter
+      if (emailParam) {
+        fetchUsers(null, emailParam); // Pass email as a parameter
       } else {
         fetchUsers();
       }
@@ -117,10 +121,93 @@ const UsersTable = () => {
       });
     }
   };
-
+  const handleSearch = () => {
+    setUsers([]);
+    fetchUsers(null, email, name);
+  };
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <div className="max-w-full overflow-x-auto">
+        <div className="mb-4 flex justify-between items-center space-x-4">
+          <div className="flex-1">
+            <label className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">
+              Filtrer par nom
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                <svg
+                  className="w-4 h-4 text-gray-500 dark:text-gray-400"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+                  />
+                </svg>
+              </div>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                type="search"
+                id="name-search"
+                className="block w-full p-4 ps-10 rounded-lg border-[1.5px] border-stroke bg-transparent text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                placeholder="Filtrer par nom"
+                required
+              />
+              <button
+                onMouseDown={handleSearch}
+                className="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              >
+                Filtrer par Nom
+              </button>
+            </div>
+          </div>
+          <div className="flex-1">
+            <label className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">
+              Filtrer par email
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                <svg
+                  className="w-4 h-4 text-gray-500 dark:text-gray-400"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+                  />
+                </svg>
+              </div>
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="search"
+                id="email-search"
+                className="block w-full p-4 ps-10 rounded-lg border-[1.5px] border-stroke bg-transparent text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                placeholder="Filtrer par email"
+                required
+              />
+              <button
+                onMouseDown={handleSearch}
+                className="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              >
+                Filtrer par email
+              </button>
+            </div>
+          </div>
+        </div>
         <table className="w-full table-auto">
           <thead>
             <tr className="bg-gray-2 text-left dark:bg-meta-4">

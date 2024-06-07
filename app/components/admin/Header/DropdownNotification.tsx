@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-
+import moment from "moment";
+import "moment/locale/fr";
+moment.locale("fr"); // Set the locale to French
 const DropdownNotification = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifying, setNotifying] = useState(true);
-
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const fetchNotificationsCalled = useRef(false);
+  const [loading, setLoading] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const trigger = useRef<any>(null);
   const dropdown = useRef<any>(null);
 
@@ -32,6 +37,36 @@ const DropdownNotification = () => {
     document.addEventListener("keydown", keyHandler);
     return () => document.removeEventListener("keydown", keyHandler);
   });
+
+  const fetchNotifications = async (cursor: string | null = null) => {
+    setLoading(true);
+    let url = "/api/notification?pageSize=6";
+    if (cursor) {
+      url += `&cursor=${cursor}`;
+    }
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      setNotifications((prevNotifs) => [...prevNotifs, ...data.notifications]);
+      setNextCursor(data.nextCursor);
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!fetchNotificationsCalled.current) {
+      fetchNotifications();
+      fetchNotificationsCalled.current = true;
+    }
+  }, []);
+  const formatDate = (dateString: string) => {
+    return moment(dateString).fromNow();
+  };
 
   return (
     <li className="relative">
@@ -80,73 +115,47 @@ const DropdownNotification = () => {
         </div>
 
         <ul className="flex h-auto flex-col overflow-y-auto">
-          <li>
-            <Link
-              className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
-              href="#"
-            >
-              <p className="text-sm">
-                <span className="text-black dark:text-white">
-                  Edit your information in a swipe
-                </span>{" "}
-                Sint occaecat cupidatat non proident, sunt in culpa qui officia
-                deserunt mollit anim.
-              </p>
-
-              <p className="text-xs">12 May, 2025</p>
-            </Link>
-          </li>
-          <li>
-            <Link
-              className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
-              href="#"
-            >
-              <p className="text-sm">
-                <span className="text-black dark:text-white">
-                  It is a long established fact
-                </span>{" "}
-                that a reader will be distracted by the readable.
-              </p>
-
-              <p className="text-xs">24 Feb, 2025</p>
-            </Link>
-          </li>
-          <li>
-            <Link
-              className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
-              href="#"
-            >
-              <p className="text-sm">
-                <span className="text-black dark:text-white">
-                  There are many variations
-                </span>{" "}
-                of passages of Lorem Ipsum available, but the majority have
-                suffered
-              </p>
-
-              <p className="text-xs">04 Jan, 2025</p>
-            </Link>
-          </li>
-          <li>
-            <Link
-              className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
-              href="#"
-            >
-              <p className="text-sm">
-                <span className="text-black dark:text-white">
-                  There are many variations
-                </span>{" "}
-                of passages of Lorem Ipsum available, but the majority have
-                suffered
-              </p>
-
-              <p className="text-xs">01 Dec, 2024</p>
-            </Link>
-          </li>
+          {notifications.map((notification, index) => (
+            <li key={index}>
+              <Link
+                className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
+                href={`/admin/notifications?email=${encodeURIComponent(notification.from_user_email)}`}
+              >
+                <p className="text-sm">
+                  <span className="text-black dark:text-white">
+                    Vous avez reçu un paiement de{" "}
+                    <strong>{notification.from_user_email}</strong>. Veuillez le
+                    vérifier.
+                  </span>
+                </p>
+                <p className="text-xs">
+                  {formatDate(notification.date_created)}
+                </p>
+              </Link>
+            </li>
+          ))}
         </ul>
+        {nextCursor && (
+          <div className="flex justify-center pt-4 items-center">
+            <button
+              onMouseDown={() => fetchNotifications(nextCursor)}
+              disabled={loading}
+              type="button"
+              className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            >
+              Afficher plus
+            </button>
+          </div>
+        )}
       </div>
     </li>
   );
 };
 
 export default DropdownNotification;
+interface Notification {
+  id: string;
+  image: string;
+  from_user_email: string;
+  date_created: string; // Ensure this is a string
+}

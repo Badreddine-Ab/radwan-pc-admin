@@ -5,6 +5,7 @@ import moment from "moment";
 import "moment/locale/fr"; // Import the French locale
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
+import { useSearchParams } from "next/navigation";
 moment.locale("fr"); // Set the locale to French
 
 const NotificationsTable = () => {
@@ -15,15 +16,24 @@ const NotificationsTable = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxImage, setLightboxImage] = useState("");
+  const searchParams = useSearchParams();
+
+  const email = searchParams.get("email");
 
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
 
-  const fetchNotifications = async (cursor: string | null = null) => {
+  const fetchNotifications = async (
+    cursor: string | null = null,
+    emailParam: string | null = null,
+  ) => {
     setLoading(true);
     let url = "/api/notification?pageSize=6";
     if (cursor) {
       url += `&cursor=${cursor}`;
+    }
+    if (emailParam) {
+      url += `&email=${emailParam}`;
     }
 
     try {
@@ -41,7 +51,11 @@ const NotificationsTable = () => {
 
   useEffect(() => {
     if (!fetchNotificationsCalled.current) {
-      fetchNotifications();
+      if (email) {
+        fetchNotifications(null, email);
+      } else {
+        fetchNotifications();
+      }
       fetchNotificationsCalled.current = true;
     }
   }, []);
@@ -58,6 +72,7 @@ const NotificationsTable = () => {
   const handleOpenUser = (userEmail: string) => {
     window.location.href = `/admin/users?email=${userEmail}`;
   };
+
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <div className="max-w-full overflow-x-auto">
@@ -68,15 +83,15 @@ const NotificationsTable = () => {
           Ajouter un pdf au cours
         </div>
 
-        <div className="flex flex-wrap justify-center gap-4">
+        <div className="flex flex-wrap min-h-[200px] justify-center gap-4">
           {notifications.map((notification) => (
             <figure
               key={notification.id}
-              className="relative max-w-sm min-h-[200px] transition-all duration-300 cursor-pointer filter grayscale hover:grayscale-0 flex-shrink-0"
+              className="relative max-w-sm h-[200px] transition-all duration-300 cursor-pointer filter grayscale hover:grayscale-0 flex-shrink-0"
               onClick={() => handleFigureClick(notification.image)}
             >
               <img
-                className="rounded-lg"
+                className="rounded-lg w-full h-full object-cover"
                 src={notification.image}
                 alt="image description"
               />

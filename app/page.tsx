@@ -1,9 +1,7 @@
-import Image from "next/image";
-import styles from "./page.module.css";
-import Header from "./components/header/Header";
 import { auth } from "@/auth";
 import SignInPage from "./components/signIn/SingInPage";
 
+import { redirect } from "next/navigation";
 export default async function Home() {
   const session = await auth();
   if (session?.user) {
@@ -13,6 +11,7 @@ export default async function Home() {
       image: session.user.image,
       role: session.user.role,
     };
+    redirect("/admin");
   }
 
   return (
