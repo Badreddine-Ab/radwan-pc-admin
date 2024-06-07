@@ -180,6 +180,7 @@ export const PUT = async (req: Request) => {
 export const DELETE = async (req: Request) => {
   try {
     const session = await auth();
+    console.log(session);
     const role = await getUserRole(session);
     if (role === "ADMIN") {
       const body = await req.json();
