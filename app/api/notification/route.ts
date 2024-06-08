@@ -20,10 +20,10 @@ const allowedFileTypes = [
   "application/x-pdf",
 ];
 const s3Client = new S3Client({
-  region: process.env.AWS_BUCKET_REGION!,
+  region: process.env.AWS_APP_BUCKET_REGION!,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    accessKeyId: process.env.AWS_APP_ACCESS_KEY!,
+    secretAccessKey: process.env.AWS_APP_SECRET_ACCESS_KEY!,
   },
 });
 
@@ -94,7 +94,7 @@ export const POST = async (req: Request) => {
 
       const fileName = generateFileName();
       const putObjectCommand = new PutObjectCommand({
-        Bucket: process.env.AWS_BUCKET_NAME!,
+        Bucket: process.env.AWS_APP_BUCKET_NAME!,
         Key: fileName,
         ContentType: fileType,
         ChecksumSHA256: checksum,
