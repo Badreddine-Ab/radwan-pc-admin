@@ -122,7 +122,7 @@ export default function CreateCourse({
       const formData = new FormData();
       formData.append("file", pdf);
       formData.append("title", pdfTitle);
-      formData.append("courseId", courseId[0]);
+      formData.append("courseId", courseId);
       formData.append("fileType", pdf.type);
       formData.append("fileSize", pdf.size.toString());
       formData.append("checksum", checksum);
@@ -140,6 +140,7 @@ export default function CreateCourse({
         closeModal();
         location.reload();
       } else {
+        alert("reessayer plus tard");
         console.log(response);
       }
     }

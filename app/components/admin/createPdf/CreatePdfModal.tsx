@@ -35,6 +35,7 @@ export default function CreatePdfModal({ isOpen, closeModal, courseId }: any) {
     if (response.ok) {
       location.reload();
     } else {
+      alert("Reesayer plus tard");
       console.log(response);
     }
   }
