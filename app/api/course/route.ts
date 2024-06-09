@@ -90,20 +90,17 @@ export const GET = async (req: Request) => {
       module: module ? module : undefined,
       id: id ? id : undefined,
     };
-
-    if (role === "REGULAR") {
-      whereCondition.is_premium = false;
+    const includeCondition: any = {};
+    if (id) {
+      includeCondition.videos = true;
+      includeCondition.PDFs = true;
     }
-
     const courses = await prisma.course.findMany({
       take: pageSize + 1,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: { id: "desc" },
       where: whereCondition,
-      include: {
-        videos: true,
-        PDFs: true,
-      },
+      include: includeCondition,
     });
 
     const hasNextPage = courses.length > pageSize;
