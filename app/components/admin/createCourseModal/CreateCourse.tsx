@@ -10,6 +10,7 @@ export default function CreateCourse({
   closeModal,
   level,
 }: CourseModalProps) {
+  const [loading, setLoading] = useState(false);
   const [firstStep, setFirstStep] = useState(true);
   const [modules, setModule] = useState([]);
   const [languages, setLanguages] = useState([]);
@@ -19,8 +20,12 @@ export default function CreateCourse({
   const [premium, setPremium] = useState(false);
   const [selectedModule, setSelectedModule] = useState("");
 
-  const [secondStep, setSecondStep] = useState(false);
+  const [chapitreStep, setChapitreStep] = useState(false);
+  const [chapitreName, setChapitreName] = useState("");
   const [courseId, setCourseId] = useState("");
+
+  const [secondStep, setSecondStep] = useState(false);
+  const [chapitreId, setChapitreId] = useState("");
   const [videoTitle, setVideoTitle] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
 
@@ -59,6 +64,7 @@ export default function CreateCourse({
       if (!file) {
         return;
       }
+      setLoading(true);
       const res = await edgestore.myPublicImages.upload({ file });
 
       const body = JSON.stringify({
@@ -71,7 +77,6 @@ export default function CreateCourse({
         description: description,
         image: res.url,
       });
-      console.log(body);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_HOST}api/course`,
         {
@@ -85,16 +90,41 @@ export default function CreateCourse({
       const course = await response.json();
       setCourseId(course.newCourse.id);
       setFirstStep(false);
-      setSecondStep(true);
+      setLoading(false);
+      setChapitreStep(true);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+    } else if (chapitreStep) {
+      setLoading(true);
+      const body = JSON.stringify({
+        name: chapitreName,
+        courseId,
+      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_HOST}api/chapitre`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: body,
+        },
+      );
+      if (!response.ok) {
+        throw new Error(`Echec de creation d echapitre : ${response.status}`);
+      }
+      const chapitre = await response.json();
+      setChapitreId(chapitre.newChapitre.id);
+      setChapitreStep(false);
+      setLoading(false);
+      setSecondStep(true);
     } else if (secondStep) {
-      console.log(courseId);
+      setLoading(true);
       const body = JSON.stringify({
         title: videoTitle,
         url: videoUrl,
-        courseId: courseId,
+        chapitreId,
       });
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_HOST}api/video`,
@@ -110,8 +140,10 @@ export default function CreateCourse({
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       setSecondStep(false);
+      setLoading(false);
       setThirdStep(true);
     } else if (thirdStep) {
+      setLoading(true);
       console.log(pdf, pdfTitle, courseId);
       if (!pdf || !pdfTitle || !courseId) {
         alert("Please fill all fields");
@@ -122,7 +154,7 @@ export default function CreateCourse({
       const formData = new FormData();
       formData.append("file", pdf);
       formData.append("title", pdfTitle);
-      formData.append("courseId", courseId);
+      formData.append("chapitreId", chapitreId);
       formData.append("fileType", pdf.type);
       formData.append("fileSize", pdf.size.toString());
       formData.append("checksum", checksum);
@@ -137,6 +169,7 @@ export default function CreateCourse({
 
       if (response.ok) {
         setThirdStep(true);
+        setLoading(false);
         closeModal();
         location.reload();
       } else {
@@ -188,6 +221,31 @@ export default function CreateCourse({
               </svg>
               Details du cours
             </a>
+          </li>
+          <li>
+            <div className="flex items-center">
+              <svg
+                className="rtl:rotate-180 block w-3 h-3 mx-1 text-gray-400"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 6 10"
+              >
+                <path
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="m1 9 4-4-4-4"
+                />
+              </svg>
+              <a
+                href="#"
+                className={`ms-1 text-sm font-medium ${chapitreStep ? "text-blue-600" : "text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white"}`}
+              >
+                Chapitre
+              </a>
+            </div>
           </li>
           <li>
             <div className="flex items-center">
@@ -311,11 +369,28 @@ export default function CreateCourse({
           </div>
         </div>
       )}
+      {chapitreStep && (
+        <div className="flex flex-col gap-5.5 p-6.5 h-[300px] overflow-auto">
+          <div>
+            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+              Nom du Chapitre
+            </label>
+            <input
+              onChange={(e) => setChapitreName(e.target.value)}
+              type="text"
+              id="chapitre-name"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder="Enter chapitre name"
+              required
+            />
+          </div>
+        </div>
+      )}
       {secondStep && (
         <div className="flex flex-col gap-5.5 p-6.5 h-[300px] overflow-auto">
           <div>
             <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-              Video Title
+              Titre du vide
             </label>
             <input
               onChange={(e) => setVideoTitle(e.target.value)}

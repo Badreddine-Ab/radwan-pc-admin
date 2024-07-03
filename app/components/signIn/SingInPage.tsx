@@ -219,6 +219,30 @@ const SignInPage: React.FC<SignInPageProps> = ({ session }) => {
                 </span>
                 S'authentifier avec Google
               </SignIn>
+              <SignIn
+                provider="facebook"
+                className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-stroke bg-gray p-4 hover:bg-opacity-50 dark:border-strokedark dark:bg-meta-4 dark:hover:bg-opacity-50"
+              >
+                <span>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.5 0H2.5C1.125 0 0 1.125 0 2.5V17.5C0 18.875 1.125 20 2.5 20H10V12.5H7.5V10H10V7.5C10 5.0125 11.7625 2.5 14.25 2.5H17.5V5H15C13.875 5 13.75 5.5125 13.75 6.25V10H17.5L16.875 12.5H13.75V20H17.5C18.875 20 20 18.875 20 17.5V2.5C20 1.125 18.875 0 17.5 0Z"
+                      fill="#1877F2"
+                    />
+                    <path
+                      d="M13.75 20V12.5H16.875L17.5 10H13.75V6.25C13.75 5.5125 13.875 5 15 5H17.5V2.5H14.25C11.7625 2.5 10 5.0125 10 7.5V10H7.5V12.5H10V20H13.75Z"
+                      fill="white"
+                    />
+                  </svg>
+                </span>
+                S'authentifier avec Facebook
+              </SignIn>
             </div>
           </div>
         </div>

@@ -76,9 +76,6 @@ export const GET = async (req: Request) => {
   const id = baseurl.searchParams.get("id");
 
   try {
-    const session = await auth();
-    const role = await getUserRole(session);
-
     await connectToDatabase();
 
     const whereCondition: any = {
@@ -92,8 +89,12 @@ export const GET = async (req: Request) => {
     };
     const includeCondition: any = {};
     if (id) {
-      includeCondition.videos = true;
-      includeCondition.PDFs = true;
+      includeCondition.chapitre = {
+        include: {
+          videos: true,
+          PDFs: true,
+        },
+      };
     }
     const courses = await prisma.course.findMany({
       take: pageSize + 1,

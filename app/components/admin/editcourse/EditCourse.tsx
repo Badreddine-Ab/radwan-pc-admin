@@ -10,9 +10,9 @@ import CreatePdfModal from "../createPdf/CreatePdfModal";
 import CreateVideoModal from "../createVideoModal/CreateVideoModal";
 import DeletePdfModal from "../deletePdfModal/DeletePdfModal";
 import DeleteVideoModal from "../deleteVideoModal/DeleteVideoModal";
-
 import { useEdgeStore } from "@/lib/edgestore";
 import LoadingSpinner from "../LoadingSpinner";
+import CreateChapterModal from "../createChapterModal/CreateChapterModal";
 
 function EditCourse() {
   const params = useParams();
@@ -22,6 +22,7 @@ function EditCourse() {
   const [isDeleteVideoOpen, setIsDeleteVideoOpen] = useState(false);
   const [isAddVideoOpen, setIsAddVideoOpen] = useState(false);
   const [isAddPdfOpen, setIsAddPdfOpen] = useState(false);
+  const [isCreateChapter, setIsCreateChapter] = useState(false);
   const [modules, setModule] = useState([]);
   const [languages, setLanguages] = useState([]);
   const [levels, setLevels] = useState([]);
@@ -29,7 +30,8 @@ function EditCourse() {
   const [pdfId, setPdfId] = useState("");
   const [videoId, setVideoId] = useState("");
   const [pdfs, setPdfs] = useState<Pdf[]>([]);
-
+  const [chapitres, setChapitres] = useState<Chapitre[]>([]);
+  const [chapitreId, setChapitreId] = useState("");
   const { edgestore } = useEdgeStore();
   // Edit course states
   const [courseImage, setCourseImage] = useState("");
@@ -109,8 +111,7 @@ function EditCourse() {
         setCourseName(course.name);
         setPremium(course.is_premium);
         setCourseImage(course.image);
-        setPdfs(course.PDFs);
-        setVideos(course.videos);
+        setChapitres(course.chapitre);
         setImage(course.image);
         setSelectedLevel(course.level);
       })
@@ -424,126 +425,178 @@ function EditCourse() {
             </button>
           </div>
         </div>
+        <div className="space-y-4">
+          {chapitres.map((chapitre) => (
+            <div
+              key={chapitre.id}
+              className="p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700"
+            >
+              <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
+                {chapitre.name}
+              </h3>
 
-        <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
-          <div className="w-full sm:w-1/2 p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-8 dark:bg-gray-800 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-4">
-              <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">
-                PDF du cours
-              </h5>
-              <div
-                onMouseDown={() => {
-                  setIsAddPdfOpen(true);
-                }}
-                className="text-sm cursor-pointer font-medium text-blue-600 hover:underline dark:text-blue-500"
-              >
-                Ajouter un pdf au cours
+              <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
+                <div className="w-full sm:w-1/2 p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-8 dark:bg-gray-800 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-4">
+                    <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">
+                      PDFs du cours
+                    </h5>
+                    <div
+                      onMouseDown={() => {
+                        setIsAddPdfOpen(true);
+                        setChapitreId(chapitre.id);
+                      }}
+                      className="text-sm cursor-pointer font-medium text-blue-600 hover:underline dark:text-blue-500"
+                    >
+                      Ajouter un PDF au cours
+                    </div>
+                  </div>
+                  <div className="flow-root">
+                    <ul
+                      role="list"
+                      className="divide-y divide-gray-200 dark:divide-gray-700"
+                    >
+                      {chapitre.PDFs.map((pdf) => (
+                        <li key={pdf.id} className="py-3 sm:py-4">
+                          <div className="flex items-center">
+                            <div className="flex-1 min-w-0 ms-4">
+                              <p className="text-sm font-bold text-custom-gray-900 truncate dark:text-white">
+                                {pdf.title}
+                              </p>
+                              <a
+                                href={pdf.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <p className="text-sm text-custom-gray-400 truncate dark:text-custom-gray-200">
+                                  {pdf.url}
+                                </p>
+                              </a>
+                            </div>
+                            <div
+                              onMouseDown={() => handleDeletePdfModal(pdf.id)}
+                              className="inline-flex cursor-pointer items-center text-base font-semibold text-gray-900 dark:text-white"
+                            >
+                              <svg
+                                className="w-6 h-6 text-gray-800 dark:text-white"
+                                aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  stroke="currentColor"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="w-full sm:w-1/2 p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-8 dark:bg-gray-800 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-4">
+                    <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">
+                      Vidéos du cours
+                    </h5>
+                    <div
+                      onMouseDown={() => {
+                        setIsAddVideoOpen(true);
+                        setChapitreId(chapitre.id);
+                      }}
+                      className="text-sm cursor-pointer font-medium text-blue-600 hover:underline dark:text-blue-500"
+                    >
+                      Ajouter une vidéo au cours
+                    </div>
+                  </div>
+                  <div className="flow-root">
+                    <ul
+                      role="list"
+                      className="divide-y divide-gray-200 dark:divide-gray-700"
+                    >
+                      {chapitre.videos.map((video) => (
+                        <li key={video.id} className="py-3 sm:py-4">
+                          <div className="flex items-center">
+                            <div className="flex-1 min-w-0 ms-4">
+                              <p className="text-sm font-bold text-custom-gray-900 truncate dark:text-white">
+                                {video.title}
+                              </p>
+                              <a
+                                href={video.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <p className="text-sm text-custom-gray-400 truncate dark:text-custom-dark-color">
+                                  {video.url}
+                                </p>
+                              </a>
+                            </div>
+                            <div
+                              onMouseDown={() =>
+                                handleDeleteVideoModal(video.id)
+                              }
+                              className="inline-flex cursor-pointer items-center text-base font-semibold text-gray-900 dark:text-white"
+                            >
+                              <svg
+                                className="w-6 h-6 text-gray-800 dark:text-white"
+                                aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  stroke="currentColor"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="flow-root">
-              <ul
-                role="list"
-                className="divide-y divide-gray-200 dark:divide-gray-700"
+          ))}
+          <div className="flex justify-center items-center pt-4">
+            <button
+              onMouseDown={() => {
+                setIsCreateChapter(true);
+              }}
+              type="button"
+              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            >
+              Ajouter un chapitre
+              <svg
+                className="rtl:rotate-180 w-3.5 h-3.5 ms-2"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 14 10"
               >
-                {pdfs.map((pdf, index) => (
-                  <li key={index} className="py-3 sm:py-4">
-                    <div className="flex items-center">
-                      <div className="flex-1 min-w-0 ms-4">
-                        <p className="text-sm font-bold text-custom-gray-900 truncate dark:text-white">
-                          {pdf.title}
-                        </p>
-                        <a href={pdf.url} target="_blank">
-                          <p className="text-sm text-custom-gray-400 truncate dark:text-custom-gray-200">
-                            {pdf.url}
-                          </p>
-                        </a>
-                      </div>
-                      <div className="inline-flex cursor-pointer items-center text-base font-semibold text-gray-900 dark:text-white">
-                        <svg
-                          onMouseDown={() => handleDeletePdfModal(pdf.id)}
-                          className="w-6 h-6 text-gray-800 dark:text-white"
-                          aria-hidden="true"
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="w-full sm:w-1/2 p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-8 dark:bg-gray-800 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-4">
-              <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">
-                Vidéo du cours
-              </h5>
-              <div
-                onMouseDown={() => {
-                  setIsAddVideoOpen(true);
-                }}
-                className="text-sm cursor-pointer font-medium text-blue-600 hover:underline dark:text-blue-500"
-              >
-                Ajouter une vidéo au cours
-              </div>
-            </div>
-            <div className="flow-root">
-              <ul
-                role="list"
-                className="divide-y divide-gray-200 dark:divide-gray-700"
-              >
-                {videos.map((video, index) => (
-                  <li key={index} className="py-3 sm:py-4">
-                    <div className="flex items-center">
-                      <div className="flex-1 min-w-0 ms-4">
-                        <p className="text-sm font-bold text-custom-gray-900 truncate dark:text-white">
-                          {video.title}
-                        </p>
-                        <a href={video.url} target="_blank">
-                          <p className="text-sm text-custom-gray-400 truncate dark:text-custom-dark-color">
-                            {video.url}
-                          </p>
-                        </a>
-                      </div>
-                      <div
-                        onMouseDown={() => handleDeleteVideoModal(video.id)}
-                        className="inline-flex cursor-pointer items-center text-base font-semibold text-gray-900 dark:text-white"
-                      >
-                        <svg
-                          className="w-6 h-6 text-gray-800 dark:text-white"
-                          aria-hidden="true"
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                <path
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M1 5h12m0 0L9 1m4 4L9 9"
+                />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
@@ -552,6 +605,15 @@ function EditCourse() {
           isOpen={isAddVideoOpen}
           closeModal={() => {
             setIsAddVideoOpen(false);
+          }}
+          chapitreId={chapitreId}
+        />
+      )}
+      {isCreateChapter && (
+        <CreateChapterModal
+          isOpen={isCreateChapter}
+          closeModal={() => {
+            setIsCreateChapter(false);
           }}
           courseId={id}
         />
@@ -562,7 +624,7 @@ function EditCourse() {
           closeModal={() => {
             setIsAddPdfOpen(false);
           }}
-          courseId={id}
+          chapitreId={chapitreId}
         />
       )}
       {isDeletePdfOpen && (
@@ -600,8 +662,7 @@ interface Course {
   date_created: string;
   date_updated: string;
   image: string;
-  videos: any[];
-  PDFs: any[];
+  chapitre: Chapitre[];
 }
 interface Pdf {
   id: string;
@@ -612,4 +673,10 @@ interface Video {
   id: string;
   url: string;
   title: string;
+}
+interface Chapitre {
+  id: string;
+  name: string;
+  videos: Video[];
+  PDFs: Pdf[];
 }

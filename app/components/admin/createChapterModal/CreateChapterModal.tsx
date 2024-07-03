@@ -1,19 +1,17 @@
 import Modal from "../modal/Modal";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
-function CreateVideoModal({ isOpen, closeModal, chapitreId }: any) {
-  const [videoTitle, setVideoTitle] = useState("");
-  const [videoUrl, setVideoUrl] = useState("");
+function CreateChapterModal({ isOpen, closeModal, courseId }: any) {
+  const [chapterTitle, setChapterTitle] = useState("");
 
-  async function handleAddVideo() {
+  async function handleAddChapter() {
     const body = JSON.stringify({
-      title: videoTitle,
-      url: videoUrl,
-      chapitreId,
+      name: chapterTitle,
+      courseId: courseId[0],
     });
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_HOST}api/video`,
+      `${process.env.NEXT_PUBLIC_API_HOST}api/chapitre`,
       {
         method: "POST",
         headers: {
@@ -33,7 +31,7 @@ function CreateVideoModal({ isOpen, closeModal, chapitreId }: any) {
     <Modal
       isOpen={isOpen}
       onClose={closeModal}
-      title="Ajouter une video au cours"
+      title="Ajouter une chapitre au cours"
       footer={
         <div className="flex justify-end">
           <button
@@ -44,7 +42,7 @@ function CreateVideoModal({ isOpen, closeModal, chapitreId }: any) {
           </button>
           <button
             className="bg-blue-500 text-white px-4 rounded"
-            onMouseDown={handleAddVideo}
+            onMouseDown={handleAddChapter}
           >
             Confirmer
           </button>
@@ -54,26 +52,14 @@ function CreateVideoModal({ isOpen, closeModal, chapitreId }: any) {
       <div className="flex flex-col gap-5.5 p-6.5 overflow-auto">
         <div>
           <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-            Video Title
+            Titre du chapitre
           </label>
           <input
-            onChange={(e) => setVideoTitle(e.target.value)}
+            onChange={(e) => setChapterTitle(e.target.value)}
             type="text"
             id="video-title"
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             placeholder="Enter video title"
-            required
-          />
-
-          <label className="my-3 block text-sm font-medium text-black dark:text-white">
-            Video URL
-          </label>
-          <input
-            onChange={(e) => setVideoUrl(e.target.value)}
-            type="text"
-            id="video-url"
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="Enter video URL"
             required
           />
         </div>
@@ -82,4 +68,4 @@ function CreateVideoModal({ isOpen, closeModal, chapitreId }: any) {
   );
 }
 
-export default CreateVideoModal;
+export default CreateChapterModal;

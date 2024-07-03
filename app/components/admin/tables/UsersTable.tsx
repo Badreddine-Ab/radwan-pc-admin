@@ -221,6 +221,9 @@ const UsersTable = () => {
                 Status
               </th>
               <th className="px-4 py-4 font-medium text-black dark:text-white">
+                Téléphone
+              </th>
+              <th className="px-4 py-4 font-medium text-black dark:text-white">
                 Actions
               </th>
             </tr>
@@ -275,7 +278,13 @@ const UsersTable = () => {
                         : "Premium expired"}
                   </p>
                 </td>
-
+                <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+                  <p className="text-black dark:text-white">
+                    {user.phone
+                      ? user.phone
+                      : "Numéro de téléphone pas ajouter"}
+                  </p>
+                </td>
                 <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                   <div className="flex items-center space-x-3.5">
                     <button
@@ -458,4 +467,5 @@ type User = {
   date_updated: Date;
   premium_start: Date | null;
   premium_end: Date | null;
+  phone: string | null;
 };

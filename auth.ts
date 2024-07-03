@@ -12,7 +12,17 @@ export const config = {
     Google({
       profile(profile) {
         return {
-          role: profile.role ?? "user",
+          role: profile.role ?? "REGULAR",
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+        };
+      },
+    }),
+    Facebook({
+      profile(profile) {
+        return {
+          role: profile.role ?? "REGULAR",
           name: profile.name,
           email: profile.email,
           image: profile.picture,

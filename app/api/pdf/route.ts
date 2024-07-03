@@ -10,7 +10,6 @@ import { auth } from "@/auth";
 import crypto from "crypto";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { getUserRole } from "../checkRole";
-import formidable from "formidable";
 
 const s3Client = new S3Client({
   region: process.env.AWS_APP_BUCKET_REGION!,
@@ -44,7 +43,7 @@ export const POST = async (req: Request) => {
     const formData = await req.formData();
     const file: File = formData.get("file") as File;
     const title: string = formData.get("title") as string;
-    const courseId: string = formData.get("courseId") as string;
+    const chapitreId: string = formData.get("chapitreId") as string;
     const fileType: string = formData.get("fileType") as string;
     const checksum: string = formData.get("checksum") as string;
     const fileSizeStr: string = formData.get("fileSize") as string; // Get size as string
@@ -92,7 +91,7 @@ export const POST = async (req: Request) => {
         data: {
           url: url.split("?")[0],
           title,
-          courseId,
+          chapitreId,
         },
       });
 

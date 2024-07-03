@@ -10,12 +10,16 @@ const computeSHA256 = async (file: File) => {
     .join("");
   return hashHex;
 };
-export default function CreatePdfModal({ isOpen, closeModal, courseId }: any) {
+export default function CreatePdfModal({
+  isOpen,
+  closeModal,
+  chapitreId,
+}: any) {
   const [pdf, setPdf] = useState<File | null>(null);
   const [pdfTitle, setPdfTitle] = useState("");
 
   async function handleAddPdf() {
-    if (!pdf || !pdfTitle || !courseId) {
+    if (!pdf || !pdfTitle || !chapitreId) {
       alert("Please fill all fields");
       return;
     }
@@ -23,7 +27,7 @@ export default function CreatePdfModal({ isOpen, closeModal, courseId }: any) {
     const formData = new FormData();
     formData.append("file", pdf);
     formData.append("title", pdfTitle);
-    formData.append("courseId", courseId[0]);
+    formData.append("chapitreId", chapitreId);
     formData.append("fileType", pdf.type);
     formData.append("fileSize", pdf.size.toString());
     formData.append("checksum", checksum);

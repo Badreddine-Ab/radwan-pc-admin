@@ -28,6 +28,7 @@ model User {
   date_updated DateTime @updatedAt
   premium_start DateTime?
   premium_end DateTime?
+  phone        String?
 }
 
 model notification {
@@ -40,9 +41,8 @@ model notification {
   model Course {
     id            String   @id @default(auto()) @map("_id") @db.ObjectId
     name          String
-    videos        Video[]
     description   String
-    PDFs          PDF[]
+    chapitre      chapitre[]
     is_sup        Boolean
     level         String
     image         String
@@ -52,19 +52,26 @@ model notification {
     date_created  DateTime @default(now())
     date_updated  DateTime @updatedAt
 }
-
+model chapitre {
+  id String @id @default (auto()) @map ("_id") @db.ObjectId
+  name  String
+  PDFs          PDF[]
+  videos        Video[]
+  courseId  String @db.ObjectId
+  course Course @relation(fields: [courseId], references : [id], onDelete:Cascade)
+}
 model Video {
   id    String @id @default(auto()) @map("_id") @db.ObjectId
   url   String
   title String
-  courseId String @db.ObjectId
-  course    Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapitreId String @db.ObjectId
+  chapitre chapitre @relation(fields: [chapitreId], references: [id], onDelete: Cascade)
 }
 
 model PDF {
   id    String @id @default(auto()) @map("_id") @db.ObjectId
   url   String
   title String
-  courseId String @db.ObjectId
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapitreId String @db.ObjectId
+  chapitre chapitre @relation(fields: [chapitreId], references: [id], onDelete: Cascade)
 }

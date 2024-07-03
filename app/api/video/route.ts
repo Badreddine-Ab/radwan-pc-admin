@@ -10,9 +10,9 @@ export const POST = async (req: Request) => {
     const role = await getUserRole(session);
     if (role === "ADMIN") {
       const body = await req.json();
-      const { url, title, courseId } = body;
+      const { url, title, chapitreId } = body;
 
-      if (!url || !title || !courseId) {
+      if (!url || !title || !chapitreId) {
         console.log("invalid data");
         return NextResponse.json({ message: "invalid data" }, { status: 400 });
       }
@@ -22,7 +22,7 @@ export const POST = async (req: Request) => {
         data: {
           url,
           title,
-          courseId,
+          chapitreId,
         },
       });
 
