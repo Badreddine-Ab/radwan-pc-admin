@@ -1,3 +1,4 @@
+import LoadingSpinner from "../LoadingSpinner";
 import Modal from "../modal/Modal";
 
 import React, { useEffect, useState } from "react";
@@ -5,8 +6,9 @@ import React, { useEffect, useState } from "react";
 function CreateVideoModal({ isOpen, closeModal, chapitreId }: any) {
   const [videoTitle, setVideoTitle] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
-
+  const [loading, setLoading] = useState(false);
   async function handleAddVideo() {
+    setLoading(true);
     const body = JSON.stringify({
       title: videoTitle,
       url: videoUrl,
@@ -25,6 +27,7 @@ function CreateVideoModal({ isOpen, closeModal, chapitreId }: any) {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     } else {
+      setLoading(false);
       location.reload();
     }
   }
@@ -78,6 +81,11 @@ function CreateVideoModal({ isOpen, closeModal, chapitreId }: any) {
           />
         </div>
       </div>
+      {loading && (
+        <div className="flex justify-center items-center h-screen w-screen fixed top-0 left-0 bg-white bg-opacity-80 z-50">
+          <LoadingSpinner />
+        </div>
+      )}
     </Modal>
   );
 }

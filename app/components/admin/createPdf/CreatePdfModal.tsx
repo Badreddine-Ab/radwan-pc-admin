@@ -1,3 +1,4 @@
+import LoadingSpinner from "../LoadingSpinner";
 import Modal from "../modal/Modal";
 
 import React, { useEffect, useState } from "react";
@@ -17,8 +18,9 @@ export default function CreatePdfModal({
 }: any) {
   const [pdf, setPdf] = useState<File | null>(null);
   const [pdfTitle, setPdfTitle] = useState("");
-
+  const [loading, setLoading] = useState(false);
   async function handleAddPdf() {
+    setLoading(true);
     if (!pdf || !pdfTitle || !chapitreId) {
       alert("Please fill all fields");
       return;
@@ -37,6 +39,7 @@ export default function CreatePdfModal({
       body: formData,
     });
     if (response.ok) {
+      setLoading(false);
       location.reload();
     } else {
       alert("Reesayer plus tard");
@@ -92,6 +95,11 @@ export default function CreatePdfModal({
           />
         </div>
       </div>
+      {loading && (
+        <div className="flex justify-center items-center h-screen w-screen fixed top-0 left-0 bg-white bg-opacity-80 z-50">
+          <LoadingSpinner />
+        </div>
+      )}
     </Modal>
   );
 }
