@@ -10,7 +10,6 @@ import CreatePdfModal from "../createPdf/CreatePdfModal";
 import CreateVideoModal from "../createVideoModal/CreateVideoModal";
 import DeletePdfModal from "../deletePdfModal/DeletePdfModal";
 import DeleteVideoModal from "../deleteVideoModal/DeleteVideoModal";
-import { useEdgeStore } from "@/lib/edgestore";
 import LoadingSpinner from "../LoadingSpinner";
 import CreateChapterModal from "../createChapterModal/CreateChapterModal";
 
@@ -32,8 +31,6 @@ function EditCourse() {
   const [pdfs, setPdfs] = useState<Pdf[]>([]);
   const [chapitres, setChapitres] = useState<Chapitre[]>([]);
   const [chapitreId, setChapitreId] = useState("");
-  const { edgestore } = useEdgeStore();
-  // Edit course states
   const [courseImage, setCourseImage] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [premium, setPremium] = useState(false);
@@ -68,33 +65,36 @@ function EditCourse() {
 
   async function handleUpdateCourse() {
     setLoading(true);
-    if (file) {
-      const res = await edgestore.myPublicImages.upload({ file });
-      setImage(res.url);
+    if (!file) {
+      alert("Veuillez ajouter une image");
+      return;
     }
+    setLoading(true);
+    const checksum = await computeSHA256(file);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileType", file.type);
+    formData.append("fileSize", file.size.toString());
+    formData.append("checksum", checksum);
+    formData.append("module", selectedModule);
+    formData.append("is_sup", superieur.toString());
+    formData.append("is_premium", premium.toString());
+    formData.append("level", selectedLevel);
+    formData.append("name", courseName);
+    formData.append("language", selectedLanguage);
+    formData.append("description", description);
+    formData.append("id", id.toString());
 
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_HOST}api/course`,
       {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: id[0],
-          name: courseName,
-          description,
-          is_sup: superieur,
-          level: selectedLevel,
-          language: selectedLanguage,
-          is_premium: premium,
-          module: selectedModule,
-          image,
-        }),
+        body: formData,
       },
     );
     if (response.ok) {
       setLoading(false);
+      location.reload();
     }
   }
   useEffect(() => {
@@ -680,3 +680,12 @@ interface Chapitre {
   videos: Video[];
   PDFs: Pdf[];
 }
+const computeSHA256 = async (file: File) => {
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return hashHex;
+};

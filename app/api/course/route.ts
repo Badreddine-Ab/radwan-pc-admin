@@ -4,50 +4,116 @@ import prisma from "@/prisma";
 import { NextResponse } from "next/server";
 import { URL } from "url";
 import { getUserRole } from "../checkRole";
+import crypto from "crypto";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
+const allowedFileTypes = [
+  "image/jpeg",
+  "image/png",
+  "video/mp4",
+  "video/quicktime",
+  "application/pdf",
+  "application/x-pdf",
+];
+const s3Client = new S3Client({
+  region: process.env.AWS_APP_BUCKET_REGION!,
+  credentials: {
+    accessKeyId: process.env.AWS_APP_ACCESS_KEY!,
+    secretAccessKey: process.env.AWS_APP_SECRET_ACCESS_KEY!,
+  },
+});
+const maxFileSize = 1048576 * 100;
+const generateFileName = (bytes = 32) =>
+  crypto.randomBytes(bytes).toString("hex");
 
 export const POST = async (req: Request) => {
   try {
     const session = await auth();
     const role = await getUserRole(session);
     if (role === "ADMIN") {
-      const body = await req.json();
-      const {
-        name,
-        description,
-        is_sup,
-        level,
-        language,
-        is_premium,
-        module,
-        image,
-      } = body;
-      if (
-        !name ||
-        !description ||
-        is_sup === undefined ||
-        !level ||
-        !language ||
-        is_premium === undefined ||
-        !module ||
-        !image
-      ) {
-        console.log("invalid data");
-        return NextResponse.json({ message: "invalid data" }, { status: 400 });
+      const formData = await req.formData();
+      const file: File = formData.get("file") as File;
+      const fileType: string = formData.get("fileType") as string;
+      const checksum: string = formData.get("checksum") as string;
+      const fileSizeStr: string = formData.get("fileSize") as string; // Get size as string
+      const name: string = formData.get("name") as string;
+      const description: string = formData.get("description") as string;
+      const isSupStr: string = formData.get("is_sup") as string;
+      const is_sup = isSupStr === "true";
+      const level: string = formData.get("level") as string;
+      const language: string = formData.get("language") as string;
+      const isPremiumStr: string = formData.get("is_premium") as string;
+      const is_premium = isPremiumStr === "true";
+      const module: string = formData.get("module") as string;
+      const fileSize: number = parseInt(fileSizeStr, 10);
+
+      if (!allowedFileTypes.includes(fileType)) {
+        return NextResponse.json(
+          { failure: "File type not allowed" },
+          { status: 400 },
+        );
       }
-      await connectToDatabase();
-      const newCourse = await prisma.course.create({
-        data: {
-          name,
-          description,
-          is_sup,
-          level,
-          language,
-          is_premium,
-          module,
-          image,
-        },
+      if (fileSize > maxFileSize) {
+        return NextResponse.json(
+          { failure: "File size too large" },
+          { status: 400 },
+        );
+      }
+      const fileName = generateFileName();
+      const putObjectCommand = new PutObjectCommand({
+        Bucket: process.env.AWS_APP_BUCKET_NAME!,
+        Key: fileName,
+        ContentType: fileType,
+        ChecksumSHA256: checksum,
       });
-      return NextResponse.json({ newCourse }, { status: 200 });
+      const url = await getSignedUrl(s3Client, putObjectCommand, {
+        expiresIn: 60,
+      });
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": fileType,
+        },
+        body: file,
+      });
+      if (response.ok) {
+        if (
+          !name ||
+          !description ||
+          is_sup === undefined ||
+          !level ||
+          !language ||
+          is_premium === undefined ||
+          !module ||
+          !url
+        ) {
+          console.log("invalid data");
+          return NextResponse.json(
+            { message: "invalid data" },
+            { status: 400 },
+          );
+        }
+        await connectToDatabase();
+        const newCourse = await prisma.course.create({
+          data: {
+            name,
+            description,
+            is_sup,
+            level,
+            language,
+            is_premium,
+            module,
+            image: url.split("?")[0],
+          },
+        });
+        return NextResponse.json({ newCourse }, { status: 200 });
+      } else {
+        return NextResponse.json(
+          { message: "Failed to upload file" },
+          { status: 400 },
+        );
+      }
     } else {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -128,51 +194,89 @@ export const PUT = async (req: Request) => {
     const session = await auth();
     const role = await getUserRole(session);
     if (role === "ADMIN") {
-      const body = await req.json();
-      const {
-        id,
-        name,
-        description,
-        is_sup,
-        level,
-        language,
-        is_premium,
-        module,
-        image,
-      } = body;
+      const formData = await req.formData();
+      const file: File = formData.get("file") as File;
+      const fileType: string = formData.get("fileType") as string;
+      const checksum: string = formData.get("checksum") as string;
+      const fileSizeStr: string = formData.get("fileSize") as string; // Get size as string
+      const name: string = formData.get("name") as string;
+      const description: string = formData.get("description") as string;
+      const isSupStr: string = formData.get("is_sup") as string;
+      const is_sup = isSupStr === "true";
+      const level: string = formData.get("level") as string;
+      const language: string = formData.get("language") as string;
+      const isPremiumStr: string = formData.get("is_premium") as string;
+      const is_premium = isPremiumStr === "true";
+      const module: string = formData.get("module") as string;
+      const fileSize: number = parseInt(fileSizeStr, 10);
+      const id: string = formData.get("id") as string;
 
-      if (
-        !id ||
-        !name ||
-        !description ||
-        is_sup === undefined ||
-        !level ||
-        !language ||
-        is_premium === undefined ||
-        !module ||
-        !image
-      ) {
-        console.log("invalid data");
-        return NextResponse.json({ message: "invalid data" }, { status: 400 });
+      if (!allowedFileTypes.includes(fileType)) {
+        return NextResponse.json(
+          { failure: "File type not allowed" },
+          { status: 400 },
+        );
       }
-
-      await connectToDatabase();
-
-      const updatedCourse = await prisma.course.update({
-        where: { id },
-        data: {
-          name,
-          description,
-          is_sup,
-          level,
-          language,
-          is_premium,
-          module,
-          image,
-        },
+      if (fileSize > maxFileSize) {
+        return NextResponse.json(
+          { failure: "File size too large" },
+          { status: 400 },
+        );
+      }
+      const fileName = generateFileName();
+      const putObjectCommand = new PutObjectCommand({
+        Bucket: process.env.AWS_APP_BUCKET_NAME!,
+        Key: fileName,
+        ContentType: fileType,
+        ChecksumSHA256: checksum,
       });
+      const url = await getSignedUrl(s3Client, putObjectCommand, {
+        expiresIn: 60,
+      });
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": fileType,
+        },
+        body: file,
+      });
+      if (response.ok) {
+        if (
+          !id ||
+          !name ||
+          !description ||
+          is_sup === undefined ||
+          !level ||
+          !language ||
+          is_premium === undefined ||
+          !module ||
+          !url
+        ) {
+          console.log("invalid data");
+          return NextResponse.json(
+            { message: "invalid data" },
+            { status: 400 },
+          );
+        }
 
-      return NextResponse.json({ updatedCourse }, { status: 200 });
+        await connectToDatabase();
+
+        const updatedCourse = await prisma.course.update({
+          where: { id },
+          data: {
+            name,
+            description,
+            is_sup,
+            level,
+            language,
+            is_premium,
+            module,
+            image: url.split("?")[0],
+          },
+        });
+
+        return NextResponse.json({ updatedCourse }, { status: 200 });
+      }
     } else {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }

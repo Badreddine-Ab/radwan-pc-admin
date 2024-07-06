@@ -4,7 +4,6 @@ import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
 import DefaultLayout from "./components/admin/layout/DefaultLayout";
-import { EdgeStoreProvider } from "@/lib/edgestore";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -31,9 +30,7 @@ export default async function RootLayout({
       <body suppressHydrationWarning={true}>
         <div className="dark:bg-boxdark-2 dark:text-bodydark">
           <SessionProvider session={session}>
-            <DefaultLayout session={session}>
-              <EdgeStoreProvider>{children}</EdgeStoreProvider>
-            </DefaultLayout>
+            <DefaultLayout session={session}>{children} </DefaultLayout>
           </SessionProvider>
         </div>
       </body>

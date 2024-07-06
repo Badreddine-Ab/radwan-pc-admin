@@ -1,9 +1,9 @@
-import { useEdgeStore } from "@/lib/edgestore";
 import React, { useEffect, useState } from "react";
 import SwitcherOne from "../switcher/SwitcherOne";
 import InputSearch from "../inputSearch/InputSearch";
 import SwitcherTwo from "../switcher/SwitcherTwo";
 import Modal from "../modal/Modal";
+import LoadingSpinner from "../LoadingSpinner";
 
 export default function CreateCourse({
   isOpen,
@@ -33,58 +33,58 @@ export default function CreateCourse({
   const [pdf, setPdf] = useState<File | null>(null);
   const [pdfTitle, setPdfTitle] = useState("");
 
-  const { edgestore } = useEdgeStore();
   const [file, setFile] = useState<File | null>(null);
 
-  const computeSHA256 = async (file: File) => {
-    const buffer = await file.arrayBuffer();
-    const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
-    return hashHex;
-  };
   const [description, setDescription] = useState("");
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFile(event.target.files ? event.target.files[0] : null);
   };
+  const fetchData = async () => {
+    try {
+      const [moduleResponse, languageResponse] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_API_HOST}api/filters?module=true`),
+        fetch(`${process.env.NEXT_PUBLIC_API_HOST}api/filters?language=true`),
+      ]);
+
+      const moduleData = await moduleResponse.json();
+      const languageData = await languageResponse.json();
+
+      setModule(moduleData.uniqueModules);
+      setLanguages(languageData.uniqueLanguages);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_HOST}api/filters?module=true`)
-      .then((response) => response.json())
-      .then((data) => setModule(data.uniqueModules))
-      .catch((error) => console.error("Error:", error));
-    fetch(`${process.env.NEXT_PUBLIC_API_HOST}api/filters?language=true`)
-      .then((response) => response.json())
-      .then((data) => setLanguages(data.uniqueLanguages))
-      .catch((error) => console.error("Error:", error));
+    fetchData();
   }, []);
   async function createCourse() {
     if (firstStep) {
       if (!file) {
+        alert("Veuillez ajouter une image");
         return;
       }
       setLoading(true);
-      const res = await edgestore.myPublicImages.upload({ file });
+      const checksum = await computeSHA256(file);
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("fileType", file.type);
+      formData.append("fileSize", file.size.toString());
+      formData.append("checksum", checksum);
+      formData.append("module", selectedModule);
+      formData.append("is_sup", superieur.toString());
+      formData.append("is_premium", premium.toString());
+      formData.append("level", decodeURIComponent(level[0]));
+      formData.append("name", courseName);
+      formData.append("language", selectedLanguage);
+      formData.append("description", description);
 
-      const body = JSON.stringify({
-        module: selectedModule,
-        is_sup: superieur,
-        is_premium: premium,
-        level: decodeURIComponent(level[0]),
-        name: courseName,
-        language: selectedLanguage,
-        description: description,
-        image: res.url,
-      });
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_HOST}api/course`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: body,
+          body: formData,
         },
       );
       const course = await response.json();
@@ -298,151 +298,171 @@ export default function CreateCourse({
           </li>
         </ol>
       </nav>
-      {firstStep && (
-        <div className="flex flex-col gap-5.5 p-6.5 h-[300px] overflow-auto">
-          <div>
-            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-              Clicker ici pour importer
-            </label>
-            <input
-              onChange={handleFileChange}
-              type="file"
-              className="w-full cursor-pointer rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition file:mr-5 file:border-collapse file:cursor-pointer file:border-0 file:border-r file:border-solid file:border-stroke file:bg-whiter file:px-5 file:py-3 file:hover:bg-primary file:hover:bg-opacity-10 focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-form-strokedark dark:file:bg-white/30 dark:file:text-white dark:focus:border-primary"
-            />
+      {firstStep &&
+        (loading ? (
+          <div className="flex justify-center items-center h-screen w-screen fixed top-0 left-0 bg-white bg-opacity-80 z-50">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-5.5 p-6.5 h-[300px] overflow-auto">
+            <div>
+              <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                Clicker ici pour importer
+              </label>
+              <input
+                onChange={handleFileChange}
+                type="file"
+                className="w-full cursor-pointer rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition file:mr-5 file:border-collapse file:cursor-pointer file:border-0 file:border-r file:border-solid file:border-stroke file:bg-whiter file:px-5 file:py-3 file:hover:bg-primary file:hover:bg-opacity-10 focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-form-strokedark dark:file:bg-white/30 dark:file:text-white dark:focus:border-primary"
+              />
 
-            <label className="my-3 block text-sm font-medium text-black dark:text-white">
-              Cours
-            </label>
-            <input
-              onChange={(e) => setCourseName(e.target.value)}
-              type="text"
-              id="course-name"
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="John"
-              required
-            />
-            <div className="flex justify-between">
-              <div className="w-1/2">
-                <label className="my-3 block text-sm font-medium text-black dark:text-white">
-                  Préparation de concours
-                </label>
-                <SwitcherOne enabled={superieur} setEnabled={setSuperieur} />
+              <label className="my-3 block text-sm font-medium text-black dark:text-white">
+                Cours
+              </label>
+              <input
+                onChange={(e) => setCourseName(e.target.value)}
+                type="text"
+                id="course-name"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="John"
+                required
+              />
+              <div className="flex justify-between">
+                <div className="w-1/2">
+                  <label className="my-3 block text-sm font-medium text-black dark:text-white">
+                    Préparation de concours
+                  </label>
+                  <SwitcherOne enabled={superieur} setEnabled={setSuperieur} />
+                </div>
+                <div className="w-1/2">
+                  <label className="my-3 block text-sm font-medium text-black dark:text-white">
+                    Langues
+                  </label>
+                  <InputSearch
+                    input={languages}
+                    propvalue={selectedLanguage}
+                    setSelectedValue={setSelectedLanguage}
+                  />
+                </div>
               </div>
-              <div className="w-1/2">
-                <label className="my-3 block text-sm font-medium text-black dark:text-white">
-                  Langues
-                </label>
-                <InputSearch
-                  input={languages}
-                  propvalue={selectedLanguage}
-                  setSelectedValue={setSelectedLanguage}
-                />
+              <div className="flex justify-between">
+                <div className="w-1/2">
+                  <label className="my-3 block text-sm font-medium text-black dark:text-white">
+                    Premium
+                  </label>
+                  <SwitcherTwo enabled={premium} setEnabled={setPremium} />
+                </div>
+                <div className="w-1/2">
+                  <label className="my-3 block text-sm font-medium text-black dark:text-white">
+                    Module
+                  </label>
+                  <InputSearch
+                    input={modules}
+                    propvalue={selectedModule}
+                    setSelectedValue={setSelectedModule}
+                  />
+                </div>
               </div>
+              <label className="my-3 block text-sm font-medium text-black dark:text-white">
+                Description
+              </label>
+              <textarea
+                onChange={(e) => setDescription(e.target.value)}
+                rows={6}
+                placeholder="Description du cours"
+                className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+              ></textarea>
             </div>
-            <div className="flex justify-between">
-              <div className="w-1/2">
-                <label className="my-3 block text-sm font-medium text-black dark:text-white">
-                  Premium
-                </label>
-                <SwitcherTwo enabled={premium} setEnabled={setPremium} />
-              </div>
-              <div className="w-1/2">
-                <label className="my-3 block text-sm font-medium text-black dark:text-white">
-                  Module
-                </label>
-                <InputSearch
-                  input={modules}
-                  propvalue={selectedModule}
-                  setSelectedValue={setSelectedModule}
-                />
-              </div>
+          </div>
+        ))}
+      {chapitreStep &&
+        (loading ? (
+          <div className="flex justify-center items-center h-screen w-screen fixed top-0 left-0 bg-white bg-opacity-80 z-50">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-5.5 p-6.5 h-[300px] overflow-auto">
+            <div>
+              <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                Nom du Chapitre
+              </label>
+              <input
+                onChange={(e) => setChapitreName(e.target.value)}
+                type="text"
+                id="chapitre-name"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="Enter chapitre name"
+                required
+              />
             </div>
-            <label className="my-3 block text-sm font-medium text-black dark:text-white">
-              Description
-            </label>
-            <textarea
-              onChange={(e) => setDescription(e.target.value)}
-              rows={6}
-              placeholder="Description du cours"
-              className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-            ></textarea>
           </div>
-        </div>
-      )}
-      {chapitreStep && (
-        <div className="flex flex-col gap-5.5 p-6.5 h-[300px] overflow-auto">
-          <div>
-            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-              Nom du Chapitre
-            </label>
-            <input
-              onChange={(e) => setChapitreName(e.target.value)}
-              type="text"
-              id="chapitre-name"
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="Enter chapitre name"
-              required
-            />
+        ))}
+      {secondStep &&
+        (loading ? (
+          <div className="flex justify-center items-center h-screen w-screen fixed top-0 left-0 bg-white bg-opacity-80 z-50">
+            <LoadingSpinner />
           </div>
-        </div>
-      )}
-      {secondStep && (
-        <div className="flex flex-col gap-5.5 p-6.5 h-[300px] overflow-auto">
-          <div>
-            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-              Titre du vide
-            </label>
-            <input
-              onChange={(e) => setVideoTitle(e.target.value)}
-              type="text"
-              id="video-title"
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="Enter video title"
-              required
-            />
+        ) : (
+          <div className="flex flex-col gap-5.5 p-6.5 h-[300px] overflow-auto">
+            <div>
+              <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                Titre du vide
+              </label>
+              <input
+                onChange={(e) => setVideoTitle(e.target.value)}
+                type="text"
+                id="video-title"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="Enter video title"
+                required
+              />
 
-            <label className="my-3 block text-sm font-medium text-black dark:text-white">
-              Video URL
-            </label>
-            <input
-              onChange={(e) => setVideoUrl(e.target.value)}
-              type="text"
-              id="video-url"
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="Enter video URL"
-              required
-            />
+              <label className="my-3 block text-sm font-medium text-black dark:text-white">
+                Video URL
+              </label>
+              <input
+                onChange={(e) => setVideoUrl(e.target.value)}
+                type="text"
+                id="video-url"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="Enter video URL"
+                required
+              />
+            </div>
           </div>
-        </div>
-      )}
-      {thirdStep && (
-        <div className="flex flex-col gap-5.5 p-6.5 h-[300px] overflow-auto">
-          <div>
-            <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-              PDF Title
-            </label>
-            <input
-              onChange={(e) => setPdfTitle(e.target.value)}
-              type="text"
-              id="pdf-title"
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="Enter PDF title"
-              required
-            />
+        ))}
+      {thirdStep &&
+        (loading ? (
+          <div className="flex justify-center items-center h-screen w-screen fixed top-0 left-0 bg-white bg-opacity-80 z-50">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-5.5 p-6.5 h-[300px] overflow-auto">
+            <div>
+              <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                PDF Title
+              </label>
+              <input
+                onChange={(e) => setPdfTitle(e.target.value)}
+                type="text"
+                id="pdf-title"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="Enter PDF title"
+                required
+              />
 
-            <label className="my-3 block text-sm font-medium text-black dark:text-white">
-              Attach PDF
-            </label>
-            <input
-              accept="application/pdf"
-              onChange={(e) => setPdf(e.target.files?.[0] || null)}
-              type="file"
-              id="pdf"
-              className="w-full cursor-pointer rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition file:mr-5 file:border-collapse file:cursor-pointer file:border-0 file:border-r file:border-solid file:border-stroke file:bg-whiter file:px-5 file:py-3 file:hover:bg-primary file:hover:bg-opacity-10 focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-form-strokedark dark:file:bg-white/30 dark:file:text-white dark:focus:border-primary"
-            />
+              <label className="my-3 block text-sm font-medium text-black dark:text-white">
+                Attach PDF
+              </label>
+              <input
+                accept="application/pdf"
+                onChange={(e) => setPdf(e.target.files?.[0] || null)}
+                type="file"
+                id="pdf"
+                className="w-full cursor-pointer rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition file:mr-5 file:border-collapse file:cursor-pointer file:border-0 file:border-r file:border-solid file:border-stroke file:bg-whiter file:px-5 file:py-3 file:hover:bg-primary file:hover:bg-opacity-10 focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-form-strokedark dark:file:bg-white/30 dark:file:text-white dark:focus:border-primary"
+              />
+            </div>
           </div>
-        </div>
-      )}
+        ))}
     </Modal>
   );
 }
@@ -451,3 +471,12 @@ interface CourseModalProps {
   closeModal: () => void;
   level: string[] | string;
 }
+const computeSHA256 = async (file: File) => {
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return hashHex;
+};
