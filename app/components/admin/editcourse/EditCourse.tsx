@@ -25,10 +25,8 @@ function EditCourse() {
   const [modules, setModule] = useState([]);
   const [languages, setLanguages] = useState([]);
   const [levels, setLevels] = useState([]);
-  const [videos, setVideos] = useState<Video[]>([]);
   const [pdfId, setPdfId] = useState("");
   const [videoId, setVideoId] = useState("");
-  const [pdfs, setPdfs] = useState<Pdf[]>([]);
   const [chapitres, setChapitres] = useState<Chapitre[]>([]);
   const [chapitreId, setChapitreId] = useState("");
   const [courseImage, setCourseImage] = useState("");
@@ -65,36 +63,50 @@ function EditCourse() {
 
   async function handleUpdateCourse() {
     setLoading(true);
-    if (!file) {
-      alert("Veuillez ajouter une image");
-      return;
-    }
-    setLoading(true);
-    const checksum = await computeSHA256(file);
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("fileType", file.type);
-    formData.append("fileSize", file.size.toString());
-    formData.append("checksum", checksum);
-    formData.append("module", selectedModule);
-    formData.append("is_sup", superieur.toString());
-    formData.append("is_premium", premium.toString());
-    formData.append("level", selectedLevel);
-    formData.append("name", courseName);
-    formData.append("language", selectedLanguage);
-    formData.append("description", description);
-    formData.append("id", id.toString());
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_HOST}api/course`,
-      {
-        method: "PUT",
-        body: formData,
-      },
-    );
-    if (response.ok) {
+    try {
+      const formData = new FormData();
+
+      // Handle file data
+      if (file) {
+        // If a new file is selected, use it
+        const checksum = await computeSHA256(file);
+        formData.append("file", file);
+        formData.append("fileType", file.type);
+        formData.append("fileSize", file.size.toString());
+        formData.append("checksum", checksum);
+      } else {
+        formData.append("keepExistingImage", "true");
+      }
+
+      // Append other course data
+      formData.append("module", selectedModule);
+      formData.append("is_sup", superieur.toString());
+      formData.append("is_premium", premium.toString());
+      formData.append("level", selectedLevel);
+      formData.append("name", courseName);
+      formData.append("language", selectedLanguage);
+      formData.append("description", description);
+      formData.append("id", id.toString());
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_HOST}api/course`,
+        {
+          method: "PUT",
+          body: formData,
+        },
+      );
+
+      if (response.ok) {
+        setLoading(false);
+        location.reload();
+      } else {
+        throw new Error("Failed to update course");
+      }
+    } catch (error) {
       setLoading(false);
-      location.reload();
+      console.error("Error updating course:", error);
+      alert("Failed to update course. Please try again.");
     }
   }
   useEffect(() => {
