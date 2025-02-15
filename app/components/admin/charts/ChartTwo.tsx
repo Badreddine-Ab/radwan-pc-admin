@@ -17,7 +17,6 @@ const options: ApexOptions = {
       enabled: false,
     },
   },
-
   responsive: [
     {
       breakpoint: 1536,
@@ -43,7 +42,6 @@ const options: ApexOptions = {
   dataLabels: {
     enabled: false,
   },
-
   xaxis: {
     categories: ["L", "M", "M", "J", "V", "S", "D"],
   },
@@ -53,9 +51,9 @@ const options: ApexOptions = {
     fontFamily: "Satoshi",
     fontWeight: 500,
     fontSize: "14px",
-
     markers: {
-      radius: 99,
+      // Removed the "radius" property since it's not supported.
+      // Optionally, you can set "size", "strokeWidth", or "fillColors" if needed.
     },
   },
   fill: {
@@ -69,16 +67,19 @@ interface ChartTwoState {
     data: number[];
   }[];
 }
+
 interface ChartTwoProps {
   weeklyData: any;
 }
+
 const ChartTwo: React.FC<ChartTwoProps> = ({ weeklyData }) => {
   const productOneData = {
     name: "nombre d'abonnés",
     data: weeklyData.subscriptions.map(
-      (subscription: any) => subscription.count,
+      (subscription: any) => subscription.count
     ),
   };
+
   const [state, setState] = useState<ChartTwoState>({
     series: [productOneData],
   });
@@ -88,7 +89,8 @@ const ChartTwo: React.FC<ChartTwoProps> = ({ weeklyData }) => {
       ...prevState,
     }));
   };
-  handleReset;
+
+  // (Note: handleReset is defined but not used.)
 
   return (
     <div className="col-span-12 rounded-sm border border-stroke bg-white p-7.5 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-4">
@@ -112,7 +114,7 @@ const ChartTwo: React.FC<ChartTwoProps> = ({ weeklyData }) => {
             series={state.series}
             type="bar"
             height={350}
-            width={"100%"}
+            width="100%"
           />
         </div>
       </div>
