@@ -9,7 +9,7 @@ function DeleteCourse({ isOpen, closeModal, selectedCourse }: any) {
     }
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_HOST}api/course/`,
+      `/api/course/`,
       {
         method: "DELETE",
         headers: {

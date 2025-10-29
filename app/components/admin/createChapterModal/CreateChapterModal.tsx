@@ -11,7 +11,7 @@ function CreateChapterModal({ isOpen, closeModal, courseId }: any) {
       courseId: courseId[0],
     });
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_HOST}api/chapitre`,
+      `/api/chapitre`,
       {
         method: "POST",
         headers: {

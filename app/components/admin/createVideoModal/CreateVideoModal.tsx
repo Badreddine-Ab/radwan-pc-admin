@@ -15,7 +15,7 @@ function CreateVideoModal({ isOpen, closeModal, chapitreId }: any) {
       chapitreId,
     });
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_HOST}api/video`,
+      `/api/video`,
       {
         method: "POST",
         headers: {

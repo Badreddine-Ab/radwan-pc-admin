@@ -90,7 +90,7 @@ function EditCourse() {
       formData.append("id", id.toString());
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_HOST}api/course`,
+        `/api/course`,
         {
           method: "PUT",
           body: formData,
@@ -111,7 +111,7 @@ function EditCourse() {
   }
   useEffect(() => {
     const fetchCourse = fetch(
-      `${process.env.NEXT_PUBLIC_API_HOST}api/course?id=${id}`,
+      `/api/course?id=${id}`,
     )
       .then((response) => response.json())
       .then((data) => {
@@ -132,21 +132,21 @@ function EditCourse() {
       });
 
     const fetchModule = fetch(
-      `${process.env.NEXT_PUBLIC_API_HOST}api/filters?module=true`,
+      `/api/filters?module=true`,
     )
       .then((response) => response.json())
       .then((data) => setModule(data.uniqueModules))
       .catch((error) => console.error("Error fetching modules:", error));
 
     const fetchLanguage = fetch(
-      `${process.env.NEXT_PUBLIC_API_HOST}api/filters?language=true`,
+      `/api/filters?language=true`,
     )
       .then((response) => response.json())
       .then((data) => setLanguages(data.uniqueLanguages))
       .catch((error) => console.error("Error fetching languages:", error));
 
     const fetchLevel = fetch(
-      `${process.env.NEXT_PUBLIC_API_HOST}api/filters?level=true`,
+      `/api/filters?level=true`,
     )
       .then((response) => response.json())
       .then((data) => setLevels(data.uniqueLevels))

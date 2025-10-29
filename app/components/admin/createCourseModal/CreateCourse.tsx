@@ -74,9 +74,9 @@ export default function CreateCourse({
   const fetchData = async () => {
     try {
       const [moduleResponse, languageResponse, levelResponse] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_HOST}api/filters?module=true`),
-        fetch(`${process.env.NEXT_PUBLIC_API_HOST}api/filters?language=true`),
-        fetch(`${process.env.NEXT_PUBLIC_API_HOST}api/filters?level=true`),
+        fetch(`/api/filters?module=true`),
+        fetch(`/api/filters?language=true`),
+        fetch(`/api/filters?level=true`),
       ]);
 
       const moduleData = await moduleResponse.json();
@@ -164,7 +164,7 @@ export default function CreateCourse({
         formData.append("level", finalLevel);
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_HOST}api/course`,
+          `/api/course`,
           {
             method: "POST",
             body: formData,
@@ -194,7 +194,7 @@ export default function CreateCourse({
       setLoading(true);
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_HOST}api/chapitre`,
+          `/api/chapitre`,
           {
             method: "POST",
             headers: {
@@ -238,7 +238,7 @@ export default function CreateCourse({
       setLoading(true);
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_HOST}api/video`,
+          `/api/video`,
           {
             method: "POST",
             headers: {
@@ -283,7 +283,7 @@ export default function CreateCourse({
         formData.append("checksum", checksum);
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_HOST}api/pdf`,
+          `/api/pdf`,
           {
             method: "POST",
             body: formData,

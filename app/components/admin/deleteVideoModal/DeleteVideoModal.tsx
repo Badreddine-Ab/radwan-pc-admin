@@ -8,7 +8,7 @@ export default function DeleteVideoModal({ isOpen, closeModal, videoId }: any) {
       return;
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}api/video/`, {
+    const response = await fetch(`/api/video/`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

@@ -8,7 +8,7 @@ export default function DeletePdfModal({ isOpen, closeModal, pdfId }: any) {
       return;
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}api/pdf/`, {
+    const response = await fetch(`/api/pdf/`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
