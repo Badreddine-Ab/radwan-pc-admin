@@ -33,7 +33,7 @@ export default function CreatePdfModal({
     formData.append("fileType", pdf.type);
     formData.append("fileSize", pdf.size.toString());
     formData.append("checksum", checksum);
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}api/pdf`, {
+    const response = await fetch(`/api/pdf`, {
       method: "POST",
 
       body: formData,

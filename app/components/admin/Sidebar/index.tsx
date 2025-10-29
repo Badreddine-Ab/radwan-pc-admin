@@ -70,7 +70,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   useEffect(() => {
     const fetchLevels = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}api/filters?level=true`);
+        const response = await fetch(`/api/filters?level=true`);
         const data = await response.json();
         setLevels(data.uniqueLevels);
       } catch (error) {

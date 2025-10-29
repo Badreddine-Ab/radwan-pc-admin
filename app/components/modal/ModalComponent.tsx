@@ -17,7 +17,7 @@ function ModalComponent({ isOpen, onRequestClose }: ModalComponentProps) {
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        fetch(`${process.env.NEXT_PUBLIC_API_HOST}api/modules`)
+        fetch(`/api/modules`)
           .then((response) => response.json())
           .then((data) => {
             setSubjects(data.uniqueModules);

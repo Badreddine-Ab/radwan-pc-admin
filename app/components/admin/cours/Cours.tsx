@@ -51,8 +51,8 @@ function Cours() {
       try {
         // Build URL based on whether level is specified
         const url = level 
-          ? `${process.env.NEXT_PUBLIC_API_HOST}api/course?level=${level}&pageSize=50`
-          : `${process.env.NEXT_PUBLIC_API_HOST}api/course?pageSize=50`;
+          ? `/api/course?level=${level}&pageSize=50`
+          : `/api/course?pageSize=50`;
 
         const response = await fetch(url);
         if (!response.ok) {
