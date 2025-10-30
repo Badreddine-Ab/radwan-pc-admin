@@ -1,6 +1,7 @@
 "use client";
 import Modal from "../modal/Modal";
 import React, { useState } from "react";
+import { apiUrl } from "@/helpers/publicApi"
 
 const computeSHA256 = async (file: File) => {
   const buffer = await file.arrayBuffer();
@@ -29,7 +30,7 @@ export default function CreateNotificationModal({ isOpen, closeModal }: any) {
     formData.append("checksum", checksum);
 
     try {
-      const response = await fetch("/api/notification", {
+      const response = await fetch(apiUrl("/api/notification"), {
         method: "POST",
         body: formData,
       });

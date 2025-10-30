@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import SidebarLinkGroup from "./SidebarLinkGroup";
 import { handleSignOut } from "../../signIn/handleSignOut";
+import { apiUrl } from "@/helpers/publicApi"
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -70,7 +71,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   useEffect(() => {
     const fetchLevels = async () => {
       try {
-        const response = await fetch(`/api/filters?level=true`);
+        const response = await fetch(apiUrl('/api/filters?level=true'));
         const data = await response.json();
         setLevels(data.uniqueLevels);
       } catch (error) {

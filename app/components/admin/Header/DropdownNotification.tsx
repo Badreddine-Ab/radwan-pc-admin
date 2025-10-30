@@ -3,6 +3,7 @@ import Link from "next/link";
 import moment from "moment";
 import "moment/locale/fr";
 moment.locale("fr"); // Set the locale to French
+import { apiUrl } from "@/helpers/publicApi"
 const DropdownNotification = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifying, setNotifying] = useState(true);
@@ -46,7 +47,7 @@ const DropdownNotification = () => {
     }
 
     try {
-      const response = await fetch(url);
+      const response = await fetch(apiUrl(url));
       const data = await response.json();
 
       setNotifications((prevNotifs) => [...prevNotifs, ...data.notifications]);

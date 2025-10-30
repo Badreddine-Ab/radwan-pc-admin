@@ -1,6 +1,7 @@
 import Modal from "../modal/Modal";
 
 import React, { useState } from "react";
+import { apiUrl } from "@/helpers/publicApi"
 
 function CreateChapterModal({ isOpen, closeModal, courseId }: any) {
   const [chapterTitle, setChapterTitle] = useState("");
@@ -11,7 +12,7 @@ function CreateChapterModal({ isOpen, closeModal, courseId }: any) {
       courseId: courseId[0],
     });
     const response = await fetch(
-      `/api/chapitre`,
+      apiUrl('/api/chapitre'),
       {
         method: "POST",
         headers: {

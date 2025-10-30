@@ -1,5 +1,6 @@
 import React from "react";
 import Modal from "../modal/Modal";
+import { apiUrl } from "@/helpers/publicApi"
 
 function DeleteCourse({ isOpen, closeModal, selectedCourse }: any) {
   async function deleteCourse() {
@@ -9,7 +10,7 @@ function DeleteCourse({ isOpen, closeModal, selectedCourse }: any) {
     }
 
     const response = await fetch(
-      `/api/course/`,
+      apiUrl('/api/course/'),
       {
         method: "DELETE",
         headers: {

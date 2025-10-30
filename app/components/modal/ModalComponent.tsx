@@ -3,6 +3,7 @@ import React, { ChangeEvent, useEffect, useState } from "react";
 import Modal from "react-modal";
 import "./ModalComponent.css";
 import axios from "axios";
+import { apiUrl } from "@/helpers/publicApi"
 
 interface ModalComponentProps {
   isOpen: boolean;
@@ -17,7 +18,7 @@ function ModalComponent({ isOpen, onRequestClose }: ModalComponentProps) {
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        fetch(`/api/modules`)
+        fetch(apiUrl('/api/modules'))
           .then((response) => response.json())
           .then((data) => {
             setSubjects(data.uniqueModules);

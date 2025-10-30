@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Modal from "../modal/Modal";
 import Swal from "sweetalert2";
 import { useSearchParams } from "next/navigation";
+import { apiUrl } from "@/helpers/publicApi"
 
 const UsersTable = () => {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -50,7 +51,7 @@ const UsersTable = () => {
       url += `&name=${nameParam}`;
     }
     try {
-      const response = await fetch(url);
+      const response = await fetch(apiUrl(url));
       const data = await response.json();
       const filteredUsers = data.users.filter(
         (user: User) => user.role !== "ADMIN",

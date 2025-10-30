@@ -6,6 +6,7 @@ import "moment/locale/fr"; // Import the French locale
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import { useSearchParams } from "next/navigation";
+import { apiUrl } from "@/helpers/publicApi"
 moment.locale("fr"); // Set the locale to French
 
 const NotificationsTable = () => {
@@ -37,7 +38,7 @@ const NotificationsTable = () => {
     }
 
     try {
-      const response = await fetch(url);
+      const response = await fetch(apiUrl(url));
       const data = await response.json();
 
       setNotifications((prevNotifs) => [...prevNotifs, ...data.notifications]);
