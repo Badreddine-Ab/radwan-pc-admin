@@ -1,5 +1,6 @@
 import React from "react";
 import Modal from "../modal/Modal";
+import { apiUrl } from "@/helpers/publicApi"
 
 export default function DeletePdfModal({ isOpen, closeModal, pdfId }: any) {
   async function deletePdf() {
@@ -8,7 +9,7 @@ export default function DeletePdfModal({ isOpen, closeModal, pdfId }: any) {
       return;
     }
 
-    const response = await fetch(`/api/pdf/`, {
+    const response = await fetch(apiUrl('/api/pdf/'), {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

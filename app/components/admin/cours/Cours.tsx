@@ -5,6 +5,7 @@ import CreateCourse from "../createCourseModal/CreateCourse";
 import DeleteCourse from "../deleteCourseModal/DeleteCourse";
 import Link from "next/link";
 import LoadingSpinner from "../LoadingSpinner";
+import { apiUrl } from "@/helpers/publicApi"
 
 interface Course {
   id: string;
@@ -54,7 +55,7 @@ function Cours() {
           ? `/api/course?level=${level}&pageSize=50`
           : `/api/course?pageSize=50`;
 
-        const response = await fetch(url);
+        const response = await fetch(apiUrl(url));
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }

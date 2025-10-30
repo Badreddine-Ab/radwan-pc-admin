@@ -2,6 +2,7 @@ import LoadingSpinner from "../LoadingSpinner";
 import Modal from "../modal/Modal";
 
 import React, { useEffect, useState } from "react";
+import { apiUrl } from "@/helpers/publicApi"
 const computeSHA256 = async (file: File) => {
   const buffer = await file.arrayBuffer();
   const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
@@ -33,7 +34,7 @@ export default function CreatePdfModal({
     formData.append("fileType", pdf.type);
     formData.append("fileSize", pdf.size.toString());
     formData.append("checksum", checksum);
-    const response = await fetch(`/api/pdf`, {
+    const response = await fetch(apiUrl('/api/pdf'), {
       method: "POST",
 
       body: formData,

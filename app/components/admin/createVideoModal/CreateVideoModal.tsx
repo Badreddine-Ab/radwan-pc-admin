@@ -2,6 +2,7 @@ import LoadingSpinner from "../LoadingSpinner";
 import Modal from "../modal/Modal";
 
 import React, { useEffect, useState } from "react";
+import { apiUrl } from "@/helpers/publicApi"
 
 function CreateVideoModal({ isOpen, closeModal, chapitreId }: any) {
   const [videoTitle, setVideoTitle] = useState("");
@@ -15,7 +16,7 @@ function CreateVideoModal({ isOpen, closeModal, chapitreId }: any) {
       chapitreId,
     });
     const response = await fetch(
-      `/api/video`,
+      apiUrl('/api/video'),
       {
         method: "POST",
         headers: {

@@ -12,6 +12,7 @@ import DeletePdfModal from "../deletePdfModal/DeletePdfModal";
 import DeleteVideoModal from "../deleteVideoModal/DeleteVideoModal";
 import LoadingSpinner from "../LoadingSpinner";
 import CreateChapterModal from "../createChapterModal/CreateChapterModal";
+import { apiUrl } from "@/helpers/publicApi"
 
 function EditCourse() {
   const params = useParams();
@@ -90,7 +91,7 @@ function EditCourse() {
       formData.append("id", id.toString());
 
       const response = await fetch(
-        `/api/course`,
+        apiUrl('/api/course'),
         {
           method: "PUT",
           body: formData,
@@ -111,7 +112,7 @@ function EditCourse() {
   }
   useEffect(() => {
     const fetchCourse = fetch(
-      `/api/course?id=${id}`,
+      apiUrl(`/api/course?id=${id}`),
     )
       .then((response) => response.json())
       .then((data) => {
@@ -132,21 +133,21 @@ function EditCourse() {
       });
 
     const fetchModule = fetch(
-      `/api/filters?module=true`,
+      apiUrl('/api/filters?module=true'),
     )
       .then((response) => response.json())
       .then((data) => setModule(data.uniqueModules))
       .catch((error) => console.error("Error fetching modules:", error));
 
     const fetchLanguage = fetch(
-      `/api/filters?language=true`,
+      apiUrl('/api/filters?language=true'),
     )
       .then((response) => response.json())
       .then((data) => setLanguages(data.uniqueLanguages))
       .catch((error) => console.error("Error fetching languages:", error));
 
     const fetchLevel = fetch(
-      `/api/filters?level=true`,
+      apiUrl('/api/filters?level=true'),
     )
       .then((response) => response.json())
       .then((data) => setLevels(data.uniqueLevels))

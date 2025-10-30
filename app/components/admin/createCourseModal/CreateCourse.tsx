@@ -6,6 +6,7 @@ import InputSearch from "../inputSearch/InputSearch";
 import SwitcherTwo from "../switcher/SwitcherTwo";
 import Modal from "../modal/Modal";
 import LoadingSpinner from "../LoadingSpinner";
+import { apiUrl } from "@/helpers/publicApi"
 
 interface CourseModalProps {
   isOpen: boolean;
@@ -74,9 +75,9 @@ export default function CreateCourse({
   const fetchData = async () => {
     try {
       const [moduleResponse, languageResponse, levelResponse] = await Promise.all([
-        fetch(`/api/filters?module=true`),
-        fetch(`/api/filters?language=true`),
-        fetch(`/api/filters?level=true`),
+        fetch(apiUrl('/api/filters?module=true')),
+        fetch(apiUrl('/api/filters?language=true')),
+        fetch(apiUrl('/api/filters?level=true')),
       ]);
 
       const moduleData = await moduleResponse.json();
@@ -164,7 +165,7 @@ export default function CreateCourse({
         formData.append("level", finalLevel);
 
         const response = await fetch(
-          `/api/course`,
+          apiUrl('/api/course'),
           {
             method: "POST",
             body: formData,
@@ -194,7 +195,7 @@ export default function CreateCourse({
       setLoading(true);
       try {
         const response = await fetch(
-          `/api/chapitre`,
+          apiUrl('/api/chapitre'),
           {
             method: "POST",
             headers: {
@@ -238,7 +239,7 @@ export default function CreateCourse({
       setLoading(true);
       try {
         const response = await fetch(
-          `/api/video`,
+          apiUrl('/api/video'),
           {
             method: "POST",
             headers: {
@@ -283,7 +284,7 @@ export default function CreateCourse({
         formData.append("checksum", checksum);
 
         const response = await fetch(
-          `/api/pdf`,
+          apiUrl('/api/pdf'),
           {
             method: "POST",
             body: formData,

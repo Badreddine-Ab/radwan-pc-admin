@@ -1,5 +1,6 @@
 import React from "react";
 import Modal from "../modal/Modal";
+import { apiUrl } from "@/helpers/publicApi"
 
 export default function DeleteVideoModal({ isOpen, closeModal, videoId }: any) {
   async function deleteVideo() {
@@ -8,7 +9,7 @@ export default function DeleteVideoModal({ isOpen, closeModal, videoId }: any) {
       return;
     }
 
-    const response = await fetch(`/api/video/`, {
+    const response = await fetch(apiUrl('/api/video/'), {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
